@@ -1,0 +1,7 @@
+# Este script carrega a placa com o programa presente na pasta
+
+make clean
+
+make 
+
+make flash
