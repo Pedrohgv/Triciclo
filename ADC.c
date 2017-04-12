@@ -1,5 +1,7 @@
 #include "ADC.h"
 
+#define USE_AHB
+
 void GPIO_ADC(uint32_t port, uint32_t analog, uint32_t ADC_module, uint32_t ADC_pin){     //enable and configures ADC function (using sample 0 sequencer 0)
     GPIOA_Type *gpio;
     ADC0_Type  *adc;    //ADC converter
@@ -13,7 +15,7 @@ void GPIO_ADC(uint32_t port, uint32_t analog, uint32_t ADC_module, uint32_t ADC_
         break;
     }
     
-    gpio = Get_Port_Adress(port);  
+    gpio = GetPortAdress(port);  
 
     SYSCTL->RCGCADC |= ADC_module;    //enable clock for ADC0    
 

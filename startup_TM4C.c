@@ -11,7 +11,7 @@
  *
  **/
 
-#include "LM4F120H5QR.h"
+#include "TM4C123GH6PM.h"
 //#include "tm4c123gh6pm-fields.h"
 
 /* main : codigo do usuario */

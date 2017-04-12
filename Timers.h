@@ -1,5 +1,5 @@
-#ifndef GPIO_H
-#define GPIO_H
+#ifndef TIMERS_H
+#define TIMERS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -8,8 +8,6 @@ extern "C" {
 #include "TM4C123GH6PM.h"
 #include "system_TM4C123.h"
 #include "GPIO.h"
-
-
 
 #ifdef __cplusplus
 }

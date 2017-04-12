@@ -1,4 +1,3 @@
-
 #ifndef GPIO_H
 #define GPIO_H
 
@@ -16,13 +15,28 @@ extern "C" {
 #define PORT_C BIT(2)
 #define PORT_D BIT(3)
 #define PORT_E BIT(4)
-#define PORT_F BIT(5) 
+#define PORT_F BIT(5)
 
-GPIOA_Type * Get_Port_Adress(uint32_t port);	//returns port adress 
-void GPIO_Init(uint32_t port, uint32_t outputs, uint32_t inputs);	//initialize digital GPIO pins
-uint32_t GPIO_ReadPins(uint32_t port);   //return values from specific GPIO port
-void GPIO_WritePins(uint32_t port, uint32_t zeroes, uint32_t ones);    //escreve na porta F
+#define YES		0x0001
+#define NO 		0x0000
+#define	ON 		0x0001	
+#define OFF 	0x0000
 
+#define INPUT 	0
+#define OUTPUT 	1
+
+typedef struct {	//struct for pin designation
+	uint32_t port;
+	uint32_t pin;
+}i_o;
+
+void xdelay(uint32_t count);    //simple delay function
+GPIOA_Type * GetPortAdress(uint32_t port);	//returns port adress 
+void GPIOInit(i_o io, uint32_t direction);	//initialize digital GPIO pins
+uint32_t GPIOReadPin(i_o io);   //return value from input pin
+void GPIOWritePin(i_o io, uint32_t value);    //writes on specific pin
+
+#define	READ(PORT,PIN)	((GPIO_ReadPins(PORT) && BIT(PIN)) >> PIN)	//mask for bit 
 
 #ifdef __cplusplus
 }

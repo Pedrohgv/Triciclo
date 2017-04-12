@@ -1,0 +1,9 @@
+gcc/ADC.o: ADC.c ADC.h TM4C123GH6PM.h system_TM4C123.h GPIO.h
+
+ADC.h:
+
+TM4C123GH6PM.h:
+
+system_TM4C123.h:
+
+GPIO.h:
