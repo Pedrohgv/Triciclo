@@ -36,7 +36,6 @@ void GPIOInit(i_o io, uint32_t direction);	//initialize digital GPIO pins
 uint32_t GPIOReadPin(i_o io);   //return value from input pin
 void GPIOWritePin(i_o io, uint32_t value);    //writes on specific pin
 
-#define	READ(PORT,PIN)	((GPIO_ReadPins(PORT) && BIT(PIN)) >> PIN)	//mask for bit 
 
 #ifdef __cplusplus
 }

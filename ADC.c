@@ -2,7 +2,8 @@
 
 #define USE_AHB
 
-void GPIO_ADC(uint32_t port, uint32_t analog, uint32_t ADC_module, uint32_t ADC_pin){     //enable and configures ADC function (using sample 0 sequencer 0)
+void ConfigureADC(i_o io, uint8_t ADC_module, uint8_t ADC_pin, uint8_t sample_sequencer, uint8_t trigger_source, uint8_t interrupt)     //enable and configures ADC function (using sample 0)
+{
     GPIOA_Type *gpio;
     ADC0_Type  *adc;    //ADC converter
 
@@ -15,27 +16,54 @@ void GPIO_ADC(uint32_t port, uint32_t analog, uint32_t ADC_module, uint32_t ADC_
         break;
     }
     
-    gpio = GetPortAdress(port);  
+    gpio = GetPortAdress(io.port);  
 
-    SYSCTL->RCGCADC |= ADC_module;    //enable clock for ADC0    
+    SYSCTL->RCGCADC |= ADC_module;    //enable clock for ADC   
 
-    SYSCTL->RCGCGPIO |= port;   //enable clock for port
+    SYSCTL->RCGCGPIO |= io.port;   //enable clock for port
     
-    gpio->AFSEL |= analog;  //enable pin to be controlled by an associated peripheral  (!!!!!!!!!!!!!!)
-    gpio->DEN &= !analog;   //disable digital function
-    gpio->AMSEL |= analog;  //disable analog isolation
+    gpio->AFSEL |= io.pin;  //enable pin to be controlled by an associated peripheral  (!!!!!!!!!!!!!!)
+    gpio->DEN &= !io.pin;   //disable digital function
+    gpio->AMSEL |= io.pin;  //disable analog isolation
 
-    adc->ACTSS &= !0x00000001;  //disable sample sequencer 0
-    adc->EMUX &= 0xFFFFFFF0;    //select processor signal as event trigger for sampling 
-    adc->SSMUX0 |= ADC_pin;    //select AIN0 (PE3) as input for sample 0 of sample sequencer 0
-    adc->SSCTL0 |= 0x00000002;     //set sample 0 of sequencer 0 to be the last sample
+    adc->ACTSS &= !(BIT(sample_sequencer));  //disable sample sequencer 
+    switch (sample_sequencer)
+    {
+        case SS_0:
+        adc->EMUX = (adc->EMUX & 0xFFFFFFF0) | trigger_source;    //select trigger source for sequencer 0
+        adc->SSMUX0 |= ADC_pin;    //select Pin as input for sample 0 of sample sequencer 0
+        adc->SSCTL0 |= (0x2 | (interrupt << 2)); //select sample 0 as end of sequence and configure interrupt
+        break;
+
+        case SS_1:
+        adc->EMUX = (adc->EMUX & 0xFFFFFF0F) | (trigger_source << 4);    //select trigger source for sequencer 1
+        adc->SSMUX1 |= ADC_pin;    //select Pin as input for sample 0 of sample sequencer 1
+        adc->SSCTL1 |= (0x2 | (interrupt << 2)); //select sample 0 as end of sequence and configure interrupt
+        break;
+
+        case SS_2:
+        adc->EMUX = (adc->EMUX & 0xFFFFF0FF) | (trigger_source << 8);    //select trigger source for sequencer 2
+        adc->SSMUX2 |= ADC_pin;    //select Pin as input for sample 0 of sample sequencer 2
+        adc->SSCTL2 |= (0x2 | (interrupt << 2)); //select sample 0 as end of sequence and configure interrupt
+        break;
+
+        case SS_3:
+        adc->EMUX = (adc->EMUX & 0xFFFF0FFF) | (trigger_source << 12);    //select trigger source for sequencer 3
+        adc->SSMUX3 |= ADC_pin;    //select Pin as input for sample 0 of sample sequencer 3
+        adc->SSCTL3 |= (0x2 | (interrupt << 2)); //select sample 0 as end of sequence and configure interrupt
+        break;
+    }
+  //  adc->SSMUX0 |= ADC_pin;    //select AIN0 (PE3) as input for sample 0 of sample sequencer 0
+    //adc->SSCTL0 |= 0x00000002;     //set sample 0 of sequencer 0 to be the last sample
+    adc->IM   |=  (interrupt << sample_sequencer);  //configure interrupt mask
     adc->PC   |= 0x00000001;      //set sampling rate as 125 ksps
-    adc->ACTSS |= 0x00000001;   //enable sample sequencer 0
+
+    /* SAMPLE SEQUENCER MUST BE ENABLED   */
    
 }
 
-uint32_t Get_ADC_Conversion(uint32_t ADC_module) { //return value from ADC conversion on ADC module specified by adc
-
+void EnableSampleSequencer (uint8_t ADC_module, uint8_t sample_sequencer)   
+{
     ADC0_Type  *adc;    //ADC converter
 
     switch (ADC_module) { //select ADC module
@@ -47,12 +75,71 @@ uint32_t Get_ADC_Conversion(uint32_t ADC_module) { //return value from ADC conve
         break;
     }
 
-    adc->PSSI |= 0x00000001; //iniciates sampling process for sample sequencer 0  
-    xdelay(10);
-    adc->PSSI = 0;
-    
-    return (adc->SSFIFO0 & 0x00000FFF);  //return conversion result masked for 12 bits
+    adc->ACTSS  |=  BIT(sample_sequencer);
+}
 
+void StartADCConversion (uint8_t ADC_module, uint8_t sample_sequencer)   
+{
+    ADC0_Type  *adc;    //ADC converter
+
+    switch (ADC_module) { //select ADC module
+        case ADC_0:
+        adc = ADC0;
+        break;
+        case ADC_1:
+        adc = ADC1;
+        break;
+    }
+    adc->PSSI |= BIT(sample_sequencer); 
+}
+
+void ClearADCInterruptStatus (uint8_t ADC_module, uint8_t sample_sequencer)    //clear the interrupt status so program can continue
+{
+    ADC0_Type  *adc;    //ADC converter
+
+    switch (ADC_module) { //select ADC module
+        case ADC_0:
+        adc = ADC0;
+        break;
+        case ADC_1:
+        adc = ADC1;
+        break;
+    }
+
+    adc->ISC |= BIT(sample_sequencer);
+}
+
+uint16_t GetADCConversion (uint8_t ADC_module, uint8_t sample_sequencer) //return value from ADC conversion on ADC module specified by adc
+{
+    ADC0_Type  *adc;    //ADC converter
+
+    switch (ADC_module) { //select ADC module
+        case ADC_0:
+        adc = ADC0;
+        break;
+        case ADC_1:
+        adc = ADC1;
+        break;
+    }
+    
+    switch (sample_sequencer)
+    {
+        case SS_0:
+        return (adc->SSFIFO0 & 0x0FFF);  //return conversion result masked for 12 bits of sample sequencer 0
+        break;
+
+        case SS_1:
+        return (adc->SSFIFO1 & 0x0FFF);  //return conversion result masked for 12 bits of sample sequencer 1
+        break;
+        
+        case SS_2:
+        return (adc->SSFIFO2 & 0x0FFF);  //return conversion result masked for 12 bits of sample sequencer 2
+        break;
+        
+        case SS_3:
+        return (adc->SSFIFO3 & 0x0FFF);  //return conversion result masked for 12 bits of sample sequencer 3
+        break;
+    }
 }
 
 
