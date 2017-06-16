@@ -30,17 +30,17 @@ void IoInit(void)   //pin initialization
 
 void TimersInit(void)
 {
-    ConfigureTimer(TIMER_0, PERIODIC_MODE, TIMER_INTERRUPT_ENABLE, ONE_SEC);    //timer for current read
-    ConfigureTimer(TIMER_1, PERIODIC_MODE, TIMER_INTERRUPT_ENABLE, ONE_SEC);    //timer for voltage read
-    ConfigureTimer(TIMER_2, ONE_SHOT_MODE, TIMER_INTERRUPT_ENABLE, FIVE_SEC);   //timer for stopping motor
+    ConfigureTimer(TIMER_0, PERIODIC_MODE, TIMER_INTERRUPT_ENABLE, ONE_SEC);    //timer for panel voltage read
+    ConfigureTimer(TIMER_1, PERIODIC_MODE, TIMER_INTERRUPT_ENABLE, ONE_SEC);    //timer for battery voltage read
+    ConfigureTimer(TIMER_2, ONE_SHOT_MODE, TIMER_INTERRUPT_ENABLE, ONE_SEC);   //timer for stopping motor
 }
 
 void ADCInit(void)
 {
-    ConfigureADC(CURRENT_READ_PIN, ADC_0, AIN8, SS_0, PROCESSOR, ADC_INTERRUPT_ENABLE); //configure ADC read for current
-    ConfigureADC(VOLTAGE_READ_PIN, ADC_0, AIN9, SS_1, PROCESSOR, ADC_INTERRUPT_ENABLE); //configure ADC read for voltage
-    EnableSampleSequencer(ADC_0, SS_0); //enables ADC read for current
-    EnableSampleSequencer(ADC_0, SS_1); //enables ADC read for voltage
+    ConfigureADC(PANEL_VOLTAGE_READ_PIN, ADC_0, AIN8, SS_0, PROCESSOR, ADC_INTERRUPT_ENABLE); //configure ADC read for panel voltage
+    ConfigureADC(BATTERY_VOLTAGE_READ_PIN, ADC_0, AIN9, SS_1, PROCESSOR, ADC_INTERRUPT_ENABLE); //configure ADC read for battery voltage
+    EnableSampleSequencer(ADC_0, SS_0); //enables ADC read for panel voltage
+    EnableSampleSequencer(ADC_0, SS_1); //enables ADC read for battery voltage
 
 }
 
@@ -60,14 +60,14 @@ void TIMER16_0A_IRQHandler(void)
 {
     
     ClearTimerInterruptStatus(TIMER_0);
-    StartCurrentRead;
+    StartPanelVoltageRead;
 }
 
 void TIMER16_1A_IRQHandler(void)
 {
     
     ClearTimerInterruptStatus(TIMER_1);
-    StartVoltageRead;
+    StartBatteryVoltageRead;
 }
 
 void TIMER16_2A_IRQHandler(void)
@@ -82,15 +82,16 @@ void ADC0Seq0_IRQHandler(void)
 {
     ClearADCInterruptStatus (ADC_0,SS_0);    //clear the interrupt status so program can continue
 
-    if(CurrentRead <= CURRENT_BATTERY_FULL)
-    {
-        TurnOffCharge;
-        TurnOnWhiteLed;
-    }
-    else
+    if(PanelVoltageRead > VOLTAGE_PANEL_LOW)  //panel voltage is large enough
     {
         TurnOnCharge;
         TurnOnBlueLed;
+    }
+    else                        //panel voltage is too low
+    {
+        TurnOffCharge;
+        TurnOnRedLed;
+        
     }
 }
 
@@ -98,32 +99,17 @@ void ADC0Seq1_IRQHandler(void)
 {
     ClearADCInterruptStatus (ADC_0,SS_1);    //clear the interrupt status so program can continue
     
-    if(DriveModePin == ON)  //voltage read in drive mode, for checking if battery has enough power
+    if(BatteryVoltageRead > VOLTAGE_BATTERY_EMPTY)
     {
-        if(VoltageRead > VOLTAGE_BATTERY_EMPTY)
-        {
-            flag_voltage_level = OK;
-            TurnOnGreenLed;
-        } 
-        else
-        {
-            flag_voltage_level = LOW;
-            TurnOnRedLed;
-        }
+        flag_voltage_level = OK;
+        TurnOnGreenLed;
     }
-    else    //voltage read in charge mode, to check if battery isn't full
+    else
     {
-        if(VoltageRead < VOLTAGE_BATTERY_FULL)
-        {
-            TurnOnBlueLed;
-            TurnOnCharge;
-            EnablePeriodicCurrentRead;
-        }
-        else
-        {
-            TurnOnWhiteLed;
-        }
+        flag_voltage_level = LOW;
+        TurnOffRedLed;
     }
+  
     
 }
 
@@ -139,18 +125,20 @@ while(1){   //main loop
 
     if(ChargeModePin == ON)   //charge mode
     {
-        StartVoltageRead;
+        TurnOffMotor;
+        EnablePeriodicPanelVoltageRead;
 
         while(ChargeModePin == ON){}    
 
-        DisablePeriodicCurrentRead;
+        DisablePeriodicPanelVoltageRead;
         TurnOffCharge; 
     }   //end of charge mode
 
     
     if(DriveModePin == ON)     //drive mode
     {
-        EnablePeriodicVoltageRead;
+        TurnOffCharge;
+        EnablePeriodicBatteryVoltageRead;
 
         while(DriveModePin == ON)
         {
@@ -160,6 +148,7 @@ while(1){   //main loop
             }
             while(flag_motor == ON){}
         }
+        DisablePeriodicBatteryVoltageRead;
     }   //end of drive mode
 
 }   //end of primary loop
