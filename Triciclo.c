@@ -30,7 +30,7 @@ void IoInit(void)   //pin initialization
 
 void TimersInit(void)
 {
-    ConfigureTimer(TIMER_1, PERIODIC_MODE, TIMER_INTERRUPT_ENABLE, ONE_SEC);    //timer for voltage read
+    ConfigureTimer(TIMER_1, PERIODIC_MODE, TIMER_INTERRUPT_ENABLE, FIVE_SEC);    //timer for voltage read
     ConfigureTimer(TIMER_2, ONE_SHOT_MODE, TIMER_INTERRUPT_ENABLE, FIVE_SEC);   //timer for stopping motor
 }
 
@@ -43,9 +43,9 @@ void ADCInit(void)
 
 void IntInit(void)  //initialize interrupts
 {
-    NVIC_EnableIRQ(ADC0SS1_IRQn);   //enables interrupt for sample sequencer 1 of ADC module 0
+   // NVIC_EnableIRQ(ADC0SS1_IRQn);   //enables interrupt for sample sequencer 1 of ADC module 0
     NVIC_EnableIRQ(TIMER1A_IRQn);   //enables interrupt for for timer 1
-    NVIC_EnableIRQ(TIMER2A_IRQn);   //enables interrupt for for timer 2
+   // NVIC_EnableIRQ(TIMER2A_IRQn);   //enables interrupt for for timer 2
 
     __enable_irq(); //enables interrupt block
 
@@ -55,7 +55,18 @@ void TIMER16_1A_IRQHandler(void)
 {
     
     ClearTimerInterruptStatus(TIMER_1);
-    StartVoltageRead;
+    if(test_variable == 1)
+    {
+        TurnOnCharge;
+        test_variable = 0;
+        TurnOnGreenLed;
+    }
+    else
+    {
+        TurnOffCharge;
+        test_variable = 1;
+        TurnOnRedLed;
+    }
 }
 
 void TIMER16_2A_IRQHandler(void)
@@ -87,37 +98,14 @@ int main(void) {	//função main **** Lembrar de inicializar portas ****
 
 IoInit();        //port initialization
 TimersInit();   //timers initialization
-ADCInit();      //ADC modules initialization
+//ADCInit();      //ADC modules initialization
 IntInit();      //interrupt initialization
+EnableTimer(TIMER_1);
 
-
-while(1){   //main loop
-
-    if(ChargeModePin == ON)   //charge mode
-    {
-       TurnOffMotor;
-       TurnOnCharge;
-       TurnOnBlueLed;
-       while(ChargeModePin == ON){}
-    }   //end of charge mode
-
+while(1)
+{   //main loop
     
-    if(DriveModePin == ON)     //drive mode
-    {
-        TurnOffCharge;
-        EnablePeriodicVoltageRead;
-
-        while(DriveModePin == ON)
-        {
-            if((StartMotorPin == ON) && (flag_voltage_level == OK))
-            {
-                TurnOnMotor;
-            }
-            while(flag_motor == ON){}
-        }
-    DisablePeriodicVoltageRead;
-    }   //end of drive mode
-
+    
 }   //end of primary loop
 
 return 0;

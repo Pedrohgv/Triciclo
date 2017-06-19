@@ -9,14 +9,19 @@ Discarded input sections
  .text          0x00000000        0x0 gcc/Triciclo.o
  .data          0x00000000        0x0 gcc/Triciclo.o
  .bss           0x00000000        0x0 gcc/Triciclo.o
- .bss.test_variable
-                0x00000000        0x2 gcc/Triciclo.o
+ .rodata.VOLTAGE_READ_PIN
+                0x00000000        0x8 gcc/Triciclo.o
+ .text.ADCInit  0x00000000       0x30 gcc/Triciclo.o
  .text          0x00000000        0x0 gcc/GPIO.o
  .data          0x00000000        0x0 gcc/GPIO.o
  .bss           0x00000000        0x0 gcc/GPIO.o
+ .text.GPIOReadPin
+                0x00000000       0x34 gcc/GPIO.o
  .text          0x00000000        0x0 gcc/Timers.o
  .data          0x00000000        0x0 gcc/Timers.o
  .bss           0x00000000        0x0 gcc/Timers.o
+ .text.DisableTimer
+                0x00000000       0x28 gcc/Timers.o
  .text          0x00000000        0x0 gcc/system_TM4C123.o
  .data          0x00000000        0x0 gcc/system_TM4C123.o
  .bss           0x00000000        0x0 gcc/system_TM4C123.o
@@ -29,6 +34,12 @@ Discarded input sections
  .text          0x00000000        0x0 gcc/ADC.o
  .data          0x00000000        0x0 gcc/ADC.o
  .bss           0x00000000        0x0 gcc/ADC.o
+ .text.ConfigureADC
+                0x00000000      0x1f4 gcc/ADC.o
+ .text.EnableSampleSequencer
+                0x00000000       0x4c gcc/ADC.o
+ .text.StartADCConversion
+                0x00000000       0x4c gcc/ADC.o
 
 Memory Configuration
 
@@ -60,7 +71,7 @@ END GROUP
                 0x00000000                _text_start = .
                 0x00000000                _text = .
 
-.text           0x00000000      0xf50
+.text           0x00000000      0xa74
  *(.nvictable)
  .nvictable     0x00000000      0x26c gcc/startup_TM4C.o
                 0x00000000                nvictable
@@ -83,6 +94,7 @@ END GROUP
                 0x0000026c                TIMER64_4B_IRQHandler
                 0x0000026c                I2C1_IRQHandler
                 0x0000026c                UART1_IRQHandler
+                0x0000026c                ADC0Seq0_IRQHandler
                 0x0000026c                TIMER16_5B_IRQHandler
                 0x0000026c                UART0_IRQHandler
                 0x0000026c                SSI0_IRQHandler
@@ -111,6 +123,7 @@ END GROUP
                 0x0000026c                TIMER64_0B_IRQHandler
                 0x0000026c                Default_Handler
                 0x0000026c                TIMER16_4A_IRQHandler
+                0x0000026c                TIMER16_0A_IRQHandler
                 0x0000026c                USB_IRQHandler
                 0x0000026c                ADC1Seq2_IRQHandler
                 0x0000026c                ADC1Seq1_IRQHandler
@@ -150,138 +163,109 @@ END GROUP
  .text.IoInit   0x00000318       0xac gcc/Triciclo.o
                 0x00000318                IoInit
  .text.TimersInit
-                0x000003c4       0x34 gcc/Triciclo.o
+                0x000003c4       0x24 gcc/Triciclo.o
                 0x000003c4                TimersInit
- .text.ADCInit  0x000003f8       0x54 gcc/Triciclo.o
-                0x000003f8                ADCInit
- .text.IntInit  0x0000044c       0x28 gcc/Triciclo.o
-                0x0000044c                IntInit
- .text.TIMER16_0A_IRQHandler
-                0x00000474       0x18 gcc/Triciclo.o
-                0x00000474                TIMER16_0A_IRQHandler
+ .text.IntInit  0x000003e8       0x10 gcc/Triciclo.o
+                0x000003e8                IntInit
  .text.TIMER16_1A_IRQHandler
-                0x0000048c       0x18 gcc/Triciclo.o
-                0x0000048c                TIMER16_1A_IRQHandler
+                0x000003f8       0xb0 gcc/Triciclo.o
+                0x000003f8                TIMER16_1A_IRQHandler
  .text.TIMER16_2A_IRQHandler
-                0x000004a4       0x28 gcc/Triciclo.o
-                0x000004a4                TIMER16_2A_IRQHandler
- .text.ADC0Seq0_IRQHandler
-                0x000004cc       0x9c gcc/Triciclo.o
-                0x000004cc                ADC0Seq0_IRQHandler
+                0x000004a8       0x28 gcc/Triciclo.o
+                0x000004a8                TIMER16_2A_IRQHandler
  .text.ADC0Seq1_IRQHandler
-                0x00000568      0x138 gcc/Triciclo.o
-                0x00000568                ADC0Seq1_IRQHandler
- .text.main     0x000006a0       0xd0 gcc/Triciclo.o
-                0x000006a0                main
- .text.xdelay   0x00000770       0x20 gcc/GPIO.o
-                0x00000770                xdelay
+                0x000004d0       0xa4 gcc/Triciclo.o
+                0x000004d0                ADC0Seq1_IRQHandler
+ .text.main     0x00000574       0x18 gcc/Triciclo.o
+                0x00000574                main
+ .text.xdelay   0x0000058c       0x20 gcc/GPIO.o
+                0x0000058c                xdelay
  .text.GetPortAdress
-                0x00000790       0xe4 gcc/GPIO.o
-                0x00000790                GetPortAdress
+                0x000005ac       0xe4 gcc/GPIO.o
+                0x000005ac                GetPortAdress
  .text.GPIOInit
-                0x00000874       0x88 gcc/GPIO.o
-                0x00000874                GPIOInit
- .text.GPIOReadPin
-                0x000008fc       0x34 gcc/GPIO.o
-                0x000008fc                GPIOReadPin
+                0x00000690       0x88 gcc/GPIO.o
+                0x00000690                GPIOInit
  .text.GPIOWritePin
-                0x00000930       0x54 gcc/GPIO.o
-                0x00000930                GPIOWritePin
+                0x00000718       0x54 gcc/GPIO.o
+                0x00000718                GPIOWritePin
  .text.GetTimerAdress
-                0x00000984       0x6c gcc/Timers.o
-                0x00000984                GetTimerAdress
+                0x0000076c       0x6c gcc/Timers.o
+                0x0000076c                GetTimerAdress
  .text.ConfigureTimer
-                0x000009f0       0x74 gcc/Timers.o
-                0x000009f0                ConfigureTimer
+                0x000007d8       0x74 gcc/Timers.o
+                0x000007d8                ConfigureTimer
  .text.EnableTimer
-                0x00000a64       0x28 gcc/Timers.o
-                0x00000a64                EnableTimer
- .text.DisableTimer
-                0x00000a8c       0x28 gcc/Timers.o
-                0x00000a8c                DisableTimer
+                0x0000084c       0x28 gcc/Timers.o
+                0x0000084c                EnableTimer
  .text.ClearTimerInterruptStatus
-                0x00000ab4       0x28 gcc/Timers.o
-                0x00000ab4                ClearTimerInterruptStatus
+                0x00000874       0x28 gcc/Timers.o
+                0x00000874                ClearTimerInterruptStatus
  .text.SystemInit
-                0x00000adc       0xb8 gcc/system_TM4C123.o
-                0x00000adc                SystemInit
- .text.ConfigureADC
-                0x00000b94      0x1f4 gcc/ADC.o
-                0x00000b94                ConfigureADC
- .text.EnableSampleSequencer
-                0x00000d88       0x4c gcc/ADC.o
-                0x00000d88                EnableSampleSequencer
- .text.StartADCConversion
-                0x00000dd4       0x4c gcc/ADC.o
-                0x00000dd4                StartADCConversion
+                0x0000089c       0xb8 gcc/system_TM4C123.o
+                0x0000089c                SystemInit
  .text.ClearADCInterruptStatus
-                0x00000e20       0x4c gcc/ADC.o
-                0x00000e20                ClearADCInterruptStatus
+                0x00000954       0x4c gcc/ADC.o
+                0x00000954                ClearADCInterruptStatus
  .text.GetADCConversion
-                0x00000e6c       0x94 gcc/ADC.o
-                0x00000e6c                GetADCConversion
-                0x00000f00                . = ALIGN (0x4)
+                0x000009a0       0x94 gcc/ADC.o
+                0x000009a0                GetADCConversion
+                0x00000a34                . = ALIGN (0x4)
  *(.rodata*)
  .rodata.CHARGE_MODE_PIN
-                0x00000f00        0x8 gcc/Triciclo.o
-                0x00000f00                CHARGE_MODE_PIN
+                0x00000a34        0x8 gcc/Triciclo.o
+                0x00000a34                CHARGE_MODE_PIN
  .rodata.DRIVE_MODE_PIN
-                0x00000f08        0x8 gcc/Triciclo.o
-                0x00000f08                DRIVE_MODE_PIN
+                0x00000a3c        0x8 gcc/Triciclo.o
+                0x00000a3c                DRIVE_MODE_PIN
  .rodata.START_MOTOR_PIN
-                0x00000f10        0x8 gcc/Triciclo.o
-                0x00000f10                START_MOTOR_PIN
+                0x00000a44        0x8 gcc/Triciclo.o
+                0x00000a44                START_MOTOR_PIN
  .rodata.CHARGE_PIN
-                0x00000f18        0x8 gcc/Triciclo.o
-                0x00000f18                CHARGE_PIN
+                0x00000a4c        0x8 gcc/Triciclo.o
+                0x00000a4c                CHARGE_PIN
  .rodata.MOTOR_PIN
-                0x00000f20        0x8 gcc/Triciclo.o
-                0x00000f20                MOTOR_PIN
+                0x00000a54        0x8 gcc/Triciclo.o
+                0x00000a54                MOTOR_PIN
  .rodata.RED_LED
-                0x00000f28        0x8 gcc/Triciclo.o
-                0x00000f28                RED_LED
+                0x00000a5c        0x8 gcc/Triciclo.o
+                0x00000a5c                RED_LED
  .rodata.BLUE_LED
-                0x00000f30        0x8 gcc/Triciclo.o
-                0x00000f30                BLUE_LED
+                0x00000a64        0x8 gcc/Triciclo.o
+                0x00000a64                BLUE_LED
  .rodata.GREEN_LED
-                0x00000f38        0x8 gcc/Triciclo.o
-                0x00000f38                GREEN_LED
- .rodata.VOLTAGE_READ_PIN
-                0x00000f40        0x8 gcc/Triciclo.o
-                0x00000f40                VOLTAGE_READ_PIN
- .rodata.CURRENT_READ_PIN
-                0x00000f48        0x8 gcc/Triciclo.o
-                0x00000f48                CURRENT_READ_PIN
+                0x00000a6c        0x8 gcc/Triciclo.o
+                0x00000a6c                GREEN_LED
 
-.glue_7         0x00000f50        0x0
- .glue_7        0x00000f50        0x0 linker stubs
+.glue_7         0x00000a74        0x0
+ .glue_7        0x00000a74        0x0 linker stubs
 
-.glue_7t        0x00000f50        0x0
- .glue_7t       0x00000f50        0x0 linker stubs
+.glue_7t        0x00000a74        0x0
+ .glue_7t       0x00000a74        0x0 linker stubs
 
-.vfp11_veneer   0x00000f50        0x0
- .vfp11_veneer  0x00000f50        0x0 linker stubs
+.vfp11_veneer   0x00000a74        0x0
+ .vfp11_veneer  0x00000a74        0x0 linker stubs
 
-.v4_bx          0x00000f50        0x0
- .v4_bx         0x00000f50        0x0 linker stubs
+.v4_bx          0x00000a74        0x0
+ .v4_bx         0x00000a74        0x0 linker stubs
 
-.iplt           0x00000f50        0x0
- .iplt          0x00000f50        0x0 gcc/startup_TM4C.o
+.iplt           0x00000a74        0x0
+ .iplt          0x00000a74        0x0 gcc/startup_TM4C.o
 
-.rel.dyn        0x00000f50        0x0
- .rel.iplt      0x00000f50        0x0 gcc/startup_TM4C.o
+.rel.dyn        0x00000a74        0x0
+ .rel.iplt      0x00000a74        0x0 gcc/startup_TM4C.o
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x00000f50                _exidx_start = .
+                0x00000a74                _exidx_start = .
 
 .ARM.exidx
  *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-                0x00000f50                _exidx_end = .
-                0x00000f50                _text_end = .
-                0x00000f50                _etext = .
+                0x00000a74                _exidx_end = .
+                0x00000a74                _text_end = .
+                0x00000a74                _etext = .
 
-.data           0x20000000        0x0 load address 0x00000f50
+.data           0x20000000        0x0 load address 0x00000a74
                 0x20000000                . = ALIGN (0x4)
                 0x20000000                _data_start = .
  *(.data*)
@@ -296,14 +280,16 @@ END GROUP
                 0x20000000                _bss_start = .
  *(.bss*)
  .bss.intmask   0x20000000        0x4 gcc/startup_TM4C.o
+ .bss.test_variable
+                0x20000004        0x2 gcc/Triciclo.o
+                0x20000004                test_variable
  .bss.flag_motor
-                0x20000004        0x1 gcc/Triciclo.o
-                0x20000004                flag_motor
+                0x20000006        0x1 gcc/Triciclo.o
+                0x20000006                flag_motor
  .bss.flag_voltage_level
-                0x20000005        0x1 gcc/Triciclo.o
-                0x20000005                flag_voltage_level
+                0x20000007        0x1 gcc/Triciclo.o
+                0x20000007                flag_voltage_level
                 0x20000008                . = ALIGN (0x4)
- *fill*         0x20000006        0x2 
  *(COMMON*)
                 0x20000008                . = ALIGN (0x4)
                 0x20000008                _bss_end = .
@@ -323,13 +309,13 @@ END GROUP
                 0x00000001                ASSERT ((_StackLimit >= _HeapLimit), region RAM overflowed with stack)
 OUTPUT(gcc/NOME_DO_PROJETO.axf elf32-littlearm)
 
-.debug_info     0x00000000     0x47da
+.debug_info     0x00000000     0x47a7
  .debug_info    0x00000000      0x1a2 gcc/startup_TM4C.o
- .debug_info    0x000001a2      0x644 gcc/Triciclo.o
- .debug_info    0x000007e6      0xf48 gcc/GPIO.o
- .debug_info    0x0000172e      0xf5f gcc/Timers.o
- .debug_info    0x0000268d      0xd31 gcc/system_TM4C123.o
- .debug_info    0x000033be     0x141c gcc/ADC.o
+ .debug_info    0x000001a2      0x611 gcc/Triciclo.o
+ .debug_info    0x000007b3      0xf48 gcc/GPIO.o
+ .debug_info    0x000016fb      0xf5f gcc/Timers.o
+ .debug_info    0x0000265a      0xd31 gcc/system_TM4C123.o
+ .debug_info    0x0000338b     0x141c gcc/ADC.o
 
 .debug_abbrev   0x00000000      0x877
  .debug_abbrev  0x00000000       0xd4 gcc/startup_TM4C.o
@@ -339,48 +325,48 @@ OUTPUT(gcc/NOME_DO_PROJETO.axf elf32-littlearm)
  .debug_abbrev  0x0000056e      0x14a gcc/system_TM4C123.o
  .debug_abbrev  0x000006b8      0x1bf gcc/ADC.o
 
-.debug_aranges  0x00000000      0x1a0
+.debug_aranges  0x00000000      0x190
  .debug_aranges
                 0x00000000       0x40 gcc/startup_TM4C.o
  .debug_aranges
-                0x00000040       0x70 gcc/Triciclo.o
+                0x00000040       0x60 gcc/Triciclo.o
  .debug_aranges
-                0x000000b0       0x40 gcc/GPIO.o
+                0x000000a0       0x40 gcc/GPIO.o
  .debug_aranges
-                0x000000f0       0x40 gcc/Timers.o
+                0x000000e0       0x40 gcc/Timers.o
  .debug_aranges
-                0x00000130       0x30 gcc/system_TM4C123.o
+                0x00000120       0x30 gcc/system_TM4C123.o
  .debug_aranges
-                0x00000160       0x40 gcc/ADC.o
+                0x00000150       0x40 gcc/ADC.o
 
-.debug_ranges   0x00000000      0x140
+.debug_ranges   0x00000000      0x130
  .debug_ranges  0x00000000       0x30 gcc/startup_TM4C.o
- .debug_ranges  0x00000030       0x60 gcc/Triciclo.o
- .debug_ranges  0x00000090       0x30 gcc/GPIO.o
- .debug_ranges  0x000000c0       0x30 gcc/Timers.o
- .debug_ranges  0x000000f0       0x20 gcc/system_TM4C123.o
- .debug_ranges  0x00000110       0x30 gcc/ADC.o
+ .debug_ranges  0x00000030       0x50 gcc/Triciclo.o
+ .debug_ranges  0x00000080       0x30 gcc/GPIO.o
+ .debug_ranges  0x000000b0       0x30 gcc/Timers.o
+ .debug_ranges  0x000000e0       0x20 gcc/system_TM4C123.o
+ .debug_ranges  0x00000100       0x30 gcc/ADC.o
 
-.debug_line     0x00000000      0xb2b
+.debug_line     0x00000000      0xac9
  .debug_line    0x00000000      0x191 gcc/startup_TM4C.o
- .debug_line    0x00000191      0x29a gcc/Triciclo.o
- .debug_line    0x0000042b      0x1a7 gcc/GPIO.o
- .debug_line    0x000005d2      0x194 gcc/Timers.o
- .debug_line    0x00000766      0x201 gcc/system_TM4C123.o
- .debug_line    0x00000967      0x1c4 gcc/ADC.o
+ .debug_line    0x00000191      0x238 gcc/Triciclo.o
+ .debug_line    0x000003c9      0x1a7 gcc/GPIO.o
+ .debug_line    0x00000570      0x194 gcc/Timers.o
+ .debug_line    0x00000704      0x201 gcc/system_TM4C123.o
+ .debug_line    0x00000905      0x1c4 gcc/ADC.o
 
-.debug_str      0x00000000     0x10f1
+.debug_str      0x00000000     0x10b6
  .debug_str     0x00000000      0x219 gcc/startup_TM4C.o
                                 0x25e (size before relaxing)
- .debug_str     0x00000219      0x58f gcc/Triciclo.o
-                                0x816 (size before relaxing)
- .debug_str     0x000007a8      0x60c gcc/GPIO.o
+ .debug_str     0x00000219      0x554 gcc/Triciclo.o
+                                0x7db (size before relaxing)
+ .debug_str     0x0000076d      0x60c gcc/GPIO.o
                                 0x81e (size before relaxing)
- .debug_str     0x00000db4       0xf7 gcc/Timers.o
+ .debug_str     0x00000d79       0xf7 gcc/Timers.o
                                 0x886 (size before relaxing)
- .debug_str     0x00000eab       0x59 gcc/system_TM4C123.o
+ .debug_str     0x00000e70       0x59 gcc/system_TM4C123.o
                                 0x7e1 (size before relaxing)
- .debug_str     0x00000f04      0x1ed gcc/ADC.o
+ .debug_str     0x00000ec9      0x1ed gcc/ADC.o
                                 0x9ec (size before relaxing)
 
 .comment        0x00000000       0x6e
@@ -407,10 +393,10 @@ OUTPUT(gcc/NOME_DO_PROJETO.axf elf32-littlearm)
  .ARM.attributes
                 0x000000ff       0x33 gcc/ADC.o
 
-.debug_frame    0x00000000      0x4d8
+.debug_frame    0x00000000      0x4a0
  .debug_frame   0x00000000       0x90 gcc/startup_TM4C.o
- .debug_frame   0x00000090      0x158 gcc/Triciclo.o
- .debug_frame   0x000001e8       0xcc gcc/GPIO.o
- .debug_frame   0x000002b4       0xc8 gcc/Timers.o
- .debug_frame   0x0000037c       0x84 gcc/system_TM4C123.o
- .debug_frame   0x00000400       0xd8 gcc/ADC.o
+ .debug_frame   0x00000090      0x120 gcc/Triciclo.o
+ .debug_frame   0x000001b0       0xcc gcc/GPIO.o
+ .debug_frame   0x0000027c       0xc8 gcc/Timers.o
+ .debug_frame   0x00000344       0x84 gcc/system_TM4C123.o
+ .debug_frame   0x000003c8       0xd8 gcc/ADC.o
