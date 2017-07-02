@@ -36,8 +36,10 @@ void TimersInit(void)
 
 void ADCInit(void)
 {
-    ConfigureADC(VOLTAGE_READ_PIN, ADC_0, AIN9, SS_1, PROCESSOR, ADC_INTERRUPT_ENABLE); //configure ADC read for voltage
-    EnableSampleSequencer(ADC_0, SS_1); //enables ADC read for voltage
+    ConfigureADC(PANEL_VOLTAGE_READ_PIN, ADC_0, AIN8, SS_0, PROCESSOR, ADC_INTERRUPT_ENABLE); //configure ADC read for panel voltage
+    ConfigureADC(BATTERY_VOLTAGE_READ_PIN, ADC_0, AIN9, SS_1, PROCESSOR, ADC_INTERRUPT_ENABLE); //configure ADC read for battery voltage
+    EnableSampleSequencer(ADC_0, SS_0); //enables ADC read for panel voltage
+    EnableSampleSequencer(ADC_0, SS_1); //enables ADC read for battery voltage
 
 }
 
@@ -49,6 +51,13 @@ void IntInit(void)  //initialize interrupts
 
     __enable_irq(); //enables interrupt block
 
+}
+
+void TIMER16_0A_IRQHandler(void)
+{
+    
+    ClearTimerInterruptStatus(TIMER_0);
+    StartPanelVoltageRead;
 }
 
 void TIMER16_1A_IRQHandler(void)
@@ -77,21 +86,39 @@ void TIMER16_2A_IRQHandler(void)
 
 }
 
+void ADC0Seq0_IRQHandler(void)
+{
+    ClearADCInterruptStatus (ADC_0,SS_0);    //clear the interrupt status so program can continue
+
+    if(PanelVoltageRead > VOLTAGE_PANEL_LOW)  //panel voltage is large enough
+    {
+        TurnOnCharge;
+        TurnOnBlueLed;
+    }
+    else                        //panel voltage is too low
+    {
+        TurnOffCharge;
+        TurnOnRedLed;
+        
+    }
+}
+
 void ADC0Seq1_IRQHandler(void)
 {
     ClearADCInterruptStatus (ADC_0,SS_1);    //clear the interrupt status so program can continue
     
-   
-    if(VoltageRead > VOLTAGE_BATTERY_EMPTY)
+    if(BatteryVoltageRead > VOLTAGE_BATTERY_EMPTY)
     {
         flag_voltage_level = OK;
         TurnOnGreenLed;
-    } 
+    }
     else
     {
         flag_voltage_level = LOW;
-        TurnOnRedLed;
-    }   
+        TurnOffRedLed;
+    }
+  
+    
 }
 
 int main(void) {	//função main **** Lembrar de inicializar portas ****
