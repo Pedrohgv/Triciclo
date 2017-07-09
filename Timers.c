@@ -45,6 +45,7 @@ void ConfigureTimer (uint32_t timer_module, uint32_t timer_mode, uint32_t interr
 	timer->TAMR |= BIT(4) | timer_mode;	// selects 'count up' mode, and selects timer mode
 	timer->TAILR = match_value;	//loads the match value for timer
 	timer->IMR |= interrupt;	//configures interrrupt (time-out mode)
+    xdelay(10);
 
 }
 
