@@ -25,10 +25,10 @@ extern "C" {
 #define	TIMER_INTERRUPT_DISABLE	0	//interrupt flags
 #define	TIMER_INTERRUPT_ENABLE	1
 
-void ConfigureTimer (uint8_t timer_module, uint8_t timer_mode, uint8_t interrupt, uint32_t match_value);	//configures timer
-void EnableTimer(uint8_t timer_module);
-void DisableTimer (uint8_t timer_module);
-void ClearTimerInterruptStatus (uint8_t timer_module);   //clear the interupt status so program can continue
+void ConfigureTimer (uint32_t timer_module, uint32_t timer_mode, uint32_t interrupt, uint32_t match_value);	//configures timer
+void EnableTimer(uint32_t timer_module);
+void DisableTimer (uint32_t timer_module);
+void ClearTimerInterruptStatus (uint32_t timer_module);   //clear the interupt status so program can continue
 
 #ifdef __cplusplus
 }

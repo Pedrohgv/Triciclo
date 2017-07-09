@@ -10,9 +10,9 @@
 
 #include "Triciclo.h"
 
-uint16_t test_variable = 0;
-uint8_t flag_motor = OFF;
-uint8_t flag_voltage_level = LOW;
+uint32_t test_variable = 0;
+uint32_t flag_motor = OFF;
+uint32_t flag_voltage_level = LOW;
 
 void IoInit(void)   //pin initialization
 {
@@ -111,12 +111,19 @@ void ADC0Seq1_IRQHandler(void)
     
 }
 
+void UARTInit(void)
+{
+    ConfigureUART(UART_0, RX_PIN, TX_PIN);
+}
+
 int main(void) {	//função main **** Lembrar de inicializar portas ****
 
+//SystemInit();
 IoInit();        //port initialization
 TimersInit();   //timers initialization
 ADCInit();      //ADC modules initialization
 IntInit();      //interrupt initialization
+UARTInit();
 
 
 while(1){   //main loop

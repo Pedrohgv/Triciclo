@@ -11,10 +11,14 @@ extern "C" {
 #include	"GPIO.h"
 #include	"ADC.h"
 #include	"Timers.h"
+#include	"UART.h"
 
-extern uint16_t test_variable;
-extern uint8_t flag_motor;
-extern uint8_t flag_voltage_level;
+extern uint32_t test_variable;
+extern uint32_t flag_motor;
+extern uint32_t flag_voltage_level;
+
+const i_o RX_PIN		  =	 {.port = PORT_A, .pin = 0};	//pins for uart receiver/transmitter
+const i_o TX_PIN		  =	 {.port = PORT_A, .pin = 1};
 
 const i_o CHARGE_MODE_PIN =  {.port = PORT_A, .pin = 7};    //input pin for 'charge mode'
 const i_o DRIVE_MODE_PIN  =  {.port = PORT_A, .pin = 6};   //input pin for 'charge mode'
@@ -33,8 +37,8 @@ const i_o BATTERY_VOLTAGE_READ_PIN = {.port = PORT_E, .pin = 5};	//Analog input 
 #define	OK	1		//flags for voltage level
 #define LOW 0
 
-#define	ONE_SEC			0x05F5E100	//time for periodic current and voltage reads
-#define	FIVE_SEC		0x1DCD6500	//motor activation time
+#define	ONE_SEC			20000000	//time for periodic current and voltage reads
+#define	FIVE_SEC		100000000	//motor activation time
 
 #define	VOLTAGE_BATTERY_EMPTY	682	//ADC read for 2.2 volts at ADC pin, equals 11 volts at battery
 
@@ -74,6 +78,7 @@ const i_o BATTERY_VOLTAGE_READ_PIN = {.port = PORT_E, .pin = 5};	//Analog input 
 
 void IoInit(void);   //pin initialization
 void IntInit(void);  //initialize interrupts
+void UARTInit(void); //initialize UART
 
 
 #ifdef __cplusplus

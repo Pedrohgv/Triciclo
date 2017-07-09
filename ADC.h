@@ -44,11 +44,11 @@ extern "C" {
 #define	ADC_INTERRUPT_ENABLE		0x1
 #define ADC_INTERUPT_DISABLE		0x0
 
-void ConfigureADC(i_o io, uint8_t ADC_module, uint8_t ADC_pin, uint8_t sample_sequencer, uint8_t trigger_source, uint8_t interrupt);     //enable and configures ADC function (using sample 0)
-void EnableSampleSequencer (uint8_t ADC_module, uint8_t sample_sequencer);
-void StartADCConversion (uint8_t ADC_module, uint8_t sample_sequencer);
-void ClearADCInterruptStatus (uint8_t ADC_module, uint8_t sample_sequencer);    //clear the interrupt status so program can continue
-uint16_t GetADCConversion (uint8_t ADC_module, uint8_t sample_sequencer); //return value from ADC conversion on ADC module specified by adc
+void ConfigureADC(i_o io, uint32_t ADC_module, uint32_t ADC_pin, uint32_t sample_sequencer, uint32_t trigger_source, uint32_t interrupt);     //enable and configures ADC function (using sample 0)
+void EnableSampleSequencer (uint32_t ADC_module, uint32_t sample_sequencer);
+void StartADCConversion (uint32_t ADC_module, uint32_t sample_sequencer);
+void ClearADCInterruptStatus (uint32_t ADC_module, uint32_t sample_sequencer);    //clear the interrupt status so program can continue
+uint32_t GetADCConversion (uint32_t ADC_module, uint32_t sample_sequencer); //return value from ADC conversion on ADC module specified by adc
 
 #ifdef __cplusplus
 }

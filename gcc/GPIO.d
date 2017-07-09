@@ -1,7 +1,0 @@
-gcc/GPIO.o: GPIO.c GPIO.h TM4C123GH6PM.h system_TM4C123.h
-
-GPIO.h:
-
-TM4C123GH6PM.h:
-
-system_TM4C123.h:

@@ -2,7 +2,7 @@
 
 #define USE_AHB
 
-void ConfigureADC(i_o io, uint8_t ADC_module, uint8_t ADC_pin, uint8_t sample_sequencer, uint8_t trigger_source, uint8_t interrupt)     //enable and configures ADC function (using sample 0)
+void ConfigureADC(i_o io, uint32_t ADC_module, uint32_t ADC_pin, uint32_t sample_sequencer, uint32_t trigger_source, uint32_t interrupt)     //enable and configures ADC function (using sample 0)
 {
     GPIOA_Type *gpio;
     ADC0_Type  *adc;    //ADC converter
@@ -22,11 +22,11 @@ void ConfigureADC(i_o io, uint8_t ADC_module, uint8_t ADC_pin, uint8_t sample_se
 
     SYSCTL->RCGCGPIO |= io.port;   //enable clock for port
     
-    gpio->AFSEL |= io.pin;  //enable pin to be controlled by an associated peripheral  (!!!!!!!!!!!!!!)
-    gpio->DEN &= !io.pin;   //disable digital function
-    gpio->AMSEL |= io.pin;  //disable analog isolation
+    gpio->AFSEL |= BIT(io.pin);  //allows pin to be controlled by an associated peripheral  
+    gpio->DEN &= ~BIT(io.pin);   //disable digital function
+    gpio->AMSEL |= BIT(io.pin);  //disable analog isolation
 
-    adc->ACTSS &= !(BIT(sample_sequencer));  //disable sample sequencer 
+    adc->ACTSS &= ~(BIT(sample_sequencer));  //disable sample sequencer 
     switch (sample_sequencer)
     {
         case SS_0:
@@ -62,7 +62,7 @@ void ConfigureADC(i_o io, uint8_t ADC_module, uint8_t ADC_pin, uint8_t sample_se
    
 }
 
-void EnableSampleSequencer (uint8_t ADC_module, uint8_t sample_sequencer)   
+void EnableSampleSequencer (uint32_t ADC_module, uint32_t sample_sequencer)   
 {
     ADC0_Type  *adc;    //ADC converter
 
@@ -78,7 +78,7 @@ void EnableSampleSequencer (uint8_t ADC_module, uint8_t sample_sequencer)
     adc->ACTSS  |=  BIT(sample_sequencer);
 }
 
-void StartADCConversion (uint8_t ADC_module, uint8_t sample_sequencer)   
+void StartADCConversion (uint32_t ADC_module, uint32_t sample_sequencer)   
 {
     ADC0_Type  *adc;    //ADC converter
 
@@ -93,7 +93,7 @@ void StartADCConversion (uint8_t ADC_module, uint8_t sample_sequencer)
     adc->PSSI |= BIT(sample_sequencer); 
 }
 
-void ClearADCInterruptStatus (uint8_t ADC_module, uint8_t sample_sequencer)    //clear the interrupt status so program can continue
+void ClearADCInterruptStatus (uint32_t ADC_module, uint32_t sample_sequencer)    //clear the interrupt status so program can continue
 {
     ADC0_Type  *adc;    //ADC converter
 
@@ -109,7 +109,7 @@ void ClearADCInterruptStatus (uint8_t ADC_module, uint8_t sample_sequencer)    /
     adc->ISC |= BIT(sample_sequencer);
 }
 
-uint16_t GetADCConversion (uint8_t ADC_module, uint8_t sample_sequencer) //return value from ADC conversion on ADC module specified by adc
+uint32_t GetADCConversion (uint32_t ADC_module, uint32_t sample_sequencer) //return value from ADC conversion on ADC module specified by adc
 {
     ADC0_Type  *adc;    //ADC converter
 

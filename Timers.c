@@ -2,7 +2,7 @@
 
 #define USE_AHB
 
-TIMER0_Type * GetTimerAdress(uint8_t timer_module){
+TIMER0_Type * GetTimerAdress(uint32_t timer_module){
 
     switch (timer_module)  //selects timer
     {
@@ -32,7 +32,7 @@ TIMER0_Type * GetTimerAdress(uint8_t timer_module){
 	}
 }
 
-void ConfigureTimer (uint8_t timer_module, uint8_t timer_mode, uint8_t interrupt, uint32_t match_value)	//configures timer
+void ConfigureTimer (uint32_t timer_module, uint32_t timer_mode, uint32_t interrupt, uint32_t match_value)	//configures timer
 {
 
 	TIMER0_Type *timer;
@@ -40,7 +40,7 @@ void ConfigureTimer (uint8_t timer_module, uint8_t timer_mode, uint8_t interrupt
 	
     SYSCTL->RCGCTIMER |= BIT(timer_module); //enabels clock for timer
 
-	timer->CTL = 0xFFFFFFFE; 	//disables timer for configuration
+	timer->CTL &= 0xFFFFFFFE; 	//disables timer for configuration
 	timer->CFG = 0x00000000;   	//selects concatenated mode
 	timer->TAMR |= BIT(4) | timer_mode;	// selects 'count up' mode, and selects timer mode
 	timer->TAILR = match_value;	//loads the match value for timer
@@ -48,7 +48,7 @@ void ConfigureTimer (uint8_t timer_module, uint8_t timer_mode, uint8_t interrupt
 
 }
 
-void EnableTimer (uint8_t timer_module)
+void EnableTimer (uint32_t timer_module)
 {
 	TIMER0_Type *timer;
 	timer = GetTimerAdress(timer_module);	//get timer adress
@@ -56,7 +56,7 @@ void EnableTimer (uint8_t timer_module)
 	timer->CTL |= 0x00000001;	//enables timer
 }
 
-void DisableTimer (uint8_t timer_module)
+void DisableTimer (uint32_t timer_module)
 {
 	TIMER0_Type *timer;
 	timer = GetTimerAdress(timer_module);	//get timer adress
@@ -64,7 +64,7 @@ void DisableTimer (uint8_t timer_module)
 	timer->CTL &= 0xFFFFFFFE;	//disables timer
 }
 
-void ClearTimerInterruptStatus (uint8_t timer_module)   //clear the interupt status so program can continue
+void ClearTimerInterruptStatus (uint32_t timer_module)   //clear the interupt status so program can continue
 {
     TIMER0_Type *timer;
     timer = GetTimerAdress(timer_module);   //get timer adress
