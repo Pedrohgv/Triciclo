@@ -129,7 +129,14 @@ void Reverse(char *str, uint32_t len)
  // of digits in x, then 0s are added at the beginning.
 int IntToStr(uint32_t x, char str[], uint32_t d)
 {
-    uint32_t i = 0;
+	uint32_t i = 0;
+
+	if(x == 0)	//if integer is 0
+	{
+		str[0] = '0';
+		str[1] = '\0';
+		return 1;
+	}   
     while (x)
     {
         str[i++] = (x%10) + '0';
@@ -155,7 +162,7 @@ void Ftoa(float n, char *res, uint32_t afterpoint)
  
     // Extract floating part
     float fpart = n - (float)ipart;
- 
+ 	
     // convert integer part to string
     uint32_t i = IntToStr(ipart, res, 0);
  

@@ -40,9 +40,13 @@ const i_o BATTERY_VOLTAGE_READ_PIN = {.port = PORT_E, .pin = 5};	//Analog input 
 #define	ONE_SEC			20000000	//time for periodic current and voltage reads
 #define	FIVE_SEC		100000000	//motor activation time
 
-#define	VOLTAGE_BATTERY_EMPTY	682	//ADC read for 2.2 volts at ADC pin, equals 11 volts at battery
+//*********** ADC/Volts ratio = 246,805218 ADC/Volt
 
-#define	VOLTAGE_PANEL_LOW		806	//ADC read for 2.6 at ADC pin, equals 13 volts at panel
+ #define	VOLTAGE_BATTERY_EMPTY	2715	//ADC read, equals 11 volts at battery
+ #define	VOLTAGE_PANEL_LOW		3085	//ADC read, equals 12,5 volts at panel
+
+// #define VOLTAGE_BATTERY_EMPTY 1927		//for testing with 9V DC source
+// #define	VOLTAGE_PANEL_LOW     1927
 
 #define	ChargeModePin   GPIOReadPin(CHARGE_MODE_PIN)			//reading of 'charging mode' pin
 #define	DriveModePin    GPIOReadPin(DRIVE_MODE_PIN)			//reading of "drive mode" pin
