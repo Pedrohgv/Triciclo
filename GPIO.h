@@ -25,6 +25,12 @@ extern "C" {
 #define INPUT 	0
 #define OUTPUT 	1
 
+#define FALLING_EDGE 0
+#define RISING_EDGE	 1
+
+#define PULL_DOWN_RESISTOR	1
+#define PULL_UP_RESISTOR	2
+
 typedef struct {	//struct for pin designation
 	uint32_t port;
 	uint32_t pin;
@@ -32,9 +38,14 @@ typedef struct {	//struct for pin designation
 
 void xdelay(uint32_t count);    //simple delay function
 GPIOA_Type * GetPortAdress(uint32_t port);	//returns port adress 
-void GPIOInit(i_o io, uint32_t direction);	//initialize digital GPIO pins
+void GPIOInit(i_o io, uint32_t direction, uint32_t internal_input_resistor);	//initialize digital GPIO pins
 uint32_t GPIOReadPin(i_o io);   //return value from input pin
 void GPIOWritePin(i_o io, uint32_t value);    //writes on specific pin
+
+void GPIOInterruptInit(i_o io, uint32_t event); //configures a edge-detect interrupt
+void GPIOInterruptEnable(i_o io);
+void GPIOInterruptDisable(i_o io);
+void GPIOClearInterruptStatus(i_o io);
 
 
 #ifdef __cplusplus

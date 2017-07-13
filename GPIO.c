@@ -69,37 +69,36 @@ GPIOA_Type * GetPortAdress(uint32_t port) {       //return adress port
 }
 
 
-void GPIOInit(i_o io, uint32_t direction) {	//initialize digital GPIO pins
-GPIOA_Type *gpio;
+void GPIOInit(i_o io, uint32_t direction, uint32_t internal_input_resistor) {	//initialize digital GPIO pins
+    GPIOA_Type *gpio;
 
-gpio = GetPortAdress(io.port); 
+    gpio = GetPortAdress(io.port); 
 
-     /* Enable clock for Port         */
-     SYSCTL->RCGCGPIO  |= io.port;
-
-     gpio->DEN |= BIT(io.pin);  //set pin as digital i/o
-    
-     if(direction == OUTPUT)
-        gpio->DIR |= BIT(io.pin);  //set pin as output or input
-     else
-        gpio->PDR |= BIT(io.pin);  //enable pull down resistor
+    /* Enable clock for Port         */
+    SYSCTL->RCGCGPIO  |= io.port;
 
     //  /* To modify PF0, it is necessary to unlock it. See 10.1 of Datasheet */
-    //  if( ((inputs|outputs)&1) && port==PORT_F) {
-    //      gpio->LOCK = 0x4C4F434B;                // unlock to set PF0
-    //      *(uint32_t * )(&(gpio->CR))   = 0x0;    // CR is marked read-only
-    //  }
+    if( (BIT(io.pin) & 1) && (io.port==PORT_F))
+    {
+        gpio->LOCK = 0x4C4F434B;                // unlock to set PF0
+        *(uint32_t * )(&(gpio->CR)) = 0x1;    // CR is marked read-only
+    }
 
-    // // /* Pins for led are digital output */
-    // gpio->DIR    = outputs;         /* Only specified bits are outputs */
-    // gpio->DEN    = outputs | inputs;  /* Only specified bits are digital        */
-    // gpio->PDR    = inputs;  //ativa resistor de pullup das portas de entrada
+    gpio->DEN |= BIT(io.pin);  //set pin as digital i/o
+
+    if(direction == OUTPUT)
+       gpio->DIR |= BIT(io.pin);  //set pin as output
+    else if(internal_input_resistor == PULL_DOWN_RESISTOR)
+       gpio->PDR |= BIT(io.pin);  //enable pull down resistor
+    else if(internal_input_resistor == PULL_UP_RESISTOR)
+       gpio->PUR |= BIT(io.pin); //enable pull up resistor
+
+    if((BIT(io.pin) & 1) && (io.port==PORT_F))
+    {
+        gpio->LOCK = 0x0;                       // lock again
+        *(uint32_t * )(&(gpio->CR))   = 0x0;    // CR is marked read-only
+    }
     xdelay(10);
-     // if( (inputs|outputs)&1 && port==PORT_F ) {
-     //     gpio->LOCK = 0x0;                       // lock again
-     //     *(uint32_t * )(&(gpio->CR))   = 0x0;    // CR is marked read-only
-    // }
-
 }
 
 uint32_t GPIOReadPin(i_o io){   //return value from input pin
@@ -126,3 +125,44 @@ gpio = GetPortAdress(io.port);
 
 } 
 
+void GPIOInterruptInit(i_o io, uint32_t event) //configures a edge-detect interrupt
+{
+    GPIOA_Type *gpio;
+    gpio = GetPortAdress(io.port); //get port adress
+
+    
+    if(event == RISING_EDGE)    //set detection event as rising or falling edge
+    {
+        gpio->IEV |= BIT(io.pin);   //set detection event as rising edge
+        GPIOInit(io, INPUT, PULL_DOWN_RESISTOR);  //initialize pin with pull down resistor
+    }    
+    else
+    {
+        GPIOInit(io, INPUT, PULL_UP_RESISTOR);  //initialize pin with pull up resistor
+    }
+    xdelay(10);
+}
+
+void GPIOInterruptEnable(i_o io)
+{
+    GPIOA_Type *gpio;
+    gpio = GetPortAdress(io.port); //get port adress
+
+    gpio->IM |= BIT(io.pin);    //enables interrupt 
+}
+
+void GPIOInterruptDisable(i_o io)
+{
+    GPIOA_Type *gpio;
+    gpio = GetPortAdress(io.port); //get port adress
+
+    gpio->IM &= ~BIT(io.pin);    //disables interrupt
+}
+
+void GPIOClearInterruptStatus(i_o io)
+{
+    GPIOA_Type *gpio;
+    gpio = GetPortAdress(io.port); //get port adress
+
+    gpio->ICR |= BIT(io.pin);    //clear interrupt status
+}

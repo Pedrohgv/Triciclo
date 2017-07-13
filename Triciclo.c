@@ -13,26 +13,27 @@
 uint32_t test_variable = 0;
 uint32_t flag_motor = OFF;
 uint32_t flag_voltage_level = LOW;
+uint32_t flag_mode = CHARGE_MODE;
+uint32_t flag_LED_state = FLAG_LED_RED;    //flag for LED state, used in blink for 
 
 void IoInit(void)   //pin initialization
 {
-    GPIOInit(RED_LED, OUTPUT);
-    GPIOInit(BLUE_LED, OUTPUT);
-    GPIOInit(GREEN_LED, OUTPUT);
-    GPIOInit(CHARGE_MODE_PIN, INPUT);
-    GPIOInit(DRIVE_MODE_PIN, INPUT);
-    GPIOInit(START_MOTOR_PIN, INPUT);
-    GPIOInit(CHARGE_PIN,OUTPUT);
-    GPIOInit(MOTOR_PIN,OUTPUT);
+    GPIOInit(RED_LED, OUTPUT, 0);
+    GPIOInit(BLUE_LED, OUTPUT, 0);
+    GPIOInit(GREEN_LED, OUTPUT, 0);
+    GPIOInterruptInit(CHARGE_MODE_PIN, FALLING_EDGE);
+    GPIOInterruptInit(DRIVE_MODE_PIN, FALLING_EDGE);
+    GPIOInit(START_MOTOR_PIN, INPUT, PULL_DOWN_RESISTOR);
+    GPIOInit(CHARGE_PIN,OUTPUT, 0);
+    GPIOInit(MOTOR_PIN,OUTPUT, 0);
     TurnOffMotor;
     TurnOffCharge;
 }
 
 void TimersInit(void)
 {
-    ConfigureTimer(TIMER_0, PERIODIC_MODE, TIMER_INTERRUPT_ENABLE, ONE_SEC);    //timer for panel voltage read
-    ConfigureTimer(TIMER_1, PERIODIC_MODE, TIMER_INTERRUPT_ENABLE, ONE_SEC);    //timer for battery voltage read
-    ConfigureTimer(TIMER_2, ONE_SHOT_MODE, TIMER_INTERRUPT_ENABLE, ONE_SEC);   //timer for stopping motor
+    ConfigureTimer(TIMER_0, PERIODIC_MODE, TIMER_INTERRUPT_ENABLE, ONE_SEC);    //timer for panel and battery voltage read
+    ConfigureTimer(TIMER_1, ONE_SHOT_MODE, TIMER_INTERRUPT_ENABLE, HALF_SEC);    //timer for stoppung the motor    
 }
 
 void ADCInit(void)
@@ -50,7 +51,10 @@ void IntInit(void)  //initialize interrupts
     NVIC_EnableIRQ(ADC0SS1_IRQn);   //enables interrupt for sample sequencer 1 of ADC module 0
     NVIC_EnableIRQ(TIMER0A_IRQn);   //enables interrupt for for timer 0
     NVIC_EnableIRQ(TIMER1A_IRQn);   //enables interrupt for for timer 1
-    NVIC_EnableIRQ(TIMER2A_IRQn);   //enables interrupt for for timer 2
+    NVIC_EnableIRQ(GPIOF_IRQn);   //enables interrupt for for port f pins
+
+    GPIOInterruptEnable(CHARGE_MODE_PIN);   //enables interrupt for charge mode button
+    GPIOInterruptEnable(DRIVE_MODE_PIN);    //enables interrupt for drive mode button
 
     __enable_irq(); //enables interrupt block
 
@@ -58,38 +62,37 @@ void IntInit(void)  //initialize interrupts
 
 void TIMER16_0A_IRQHandler(void)
 {
-    
     ClearTimerInterruptStatus(TIMER_0);
-    StartPanelVoltageRead; 
+    if(flag_mode == CHARGE_MODE)
+    {
+        StartPanelVoltageRead;
+    }
+    else if(flag_mode == DRIVE_MODE)
+    {
+        StartBatteryVoltageRead;
+    }
+    GPIOInterruptEnable(CHARGE_MODE_PIN);   //re-enable external interrupts for changing operation mode
+    GPIOInterruptEnable(DRIVE_MODE_PIN);
 }
 
 void TIMER16_1A_IRQHandler(void)
 {
-    
     ClearTimerInterruptStatus(TIMER_1);
-    StartBatteryVoltageRead;
-}
-
-void TIMER16_2A_IRQHandler(void)
-{
-    
-    ClearTimerInterruptStatus(TIMER_2);
     TurnOffMotor;
-
 }
 
-void ADC0Seq0_IRQHandler(void)
+void ADC0Seq0_IRQHandler(void)              //ADC voltage read from panel
 {
     ClearADCInterruptStatus (ADC_0,SS_0);    //clear the interrupt status so program can continue
 
-
     uint32_t ADC = PanelVoltageRead;
+
     char char_float[10];
     Ftoa(ADC, char_float, 5);
     PrintString(UART_0, char_float);
     PrintChar(UART_0, '\n');
 
-    if(PanelVoltageRead > VOLTAGE_PANEL_LOW)
+    if(ADC > VOLTAGE_PANEL_LOW)
     {
         TurnOnCharge;
         TurnOnBlueLed;
@@ -97,7 +100,16 @@ void ADC0Seq0_IRQHandler(void)
     else
     {
         TurnOffCharge;
-        TurnOnRedLed;
+        if(flag_LED_state == FLAG_LED_RED)
+        {
+            TurnOnRedLed;
+            flag_LED_state = FLAG_LED_BLUE;
+        }
+        else if(flag_LED_state == FLAG_LED_BLUE)
+        {
+            TurnOnBlueLed;
+            flag_LED_state = FLAG_LED_RED;
+        }
     }
     
 }
@@ -107,12 +119,13 @@ void ADC0Seq1_IRQHandler(void)
     ClearADCInterruptStatus (ADC_0,SS_1);    //clear the interrupt status so program can continue
 
     uint32_t ADC = BatteryVoltageRead;
+
     char char_float[10];
     Ftoa(ADC, char_float, 5);
     PrintString(UART_0, char_float);
     PrintChar(UART_0, '\n');
     
-    if(BatteryVoltageRead > VOLTAGE_BATTERY_EMPTY)
+    if(ADC > VOLTAGE_BATTERY_EMPTY)
     {
         flag_voltage_level = OK;
         TurnOnGreenLed;
@@ -120,10 +133,44 @@ void ADC0Seq1_IRQHandler(void)
     else
     {
         flag_voltage_level = LOW;
-        TurnOnRedLed;
+        if(flag_LED_state == FLAG_LED_RED)
+        {
+            TurnOnRedLed;
+            flag_LED_state = FLAG_LED_GREEN;
+        }
+        else if(flag_LED_state == FLAG_LED_GREEN)
+        {
+            TurnOnGreenLed;
+            flag_LED_state = FLAG_LED_RED;
+        }
     }
   
     
+}
+
+void GPIOF_IRQHandler(void)
+{
+    GPIOInterruptDisable(CHARGE_MODE_PIN);
+    GPIOInterruptDisable(DRIVE_MODE_PIN);
+
+    DisablePeriodicVoltageRead; //disable periodic timer for avoiding the external interrupt to be re-enabled too fast
+
+    flag_LED_state = FLAG_LED_RED;  //resets flag LED to red for 1st blink in case of low voltage
+    
+    if(ChargeModePin == 0)  //charge mode pin is ON? (pin is low-level activated)
+    {
+        TurnOffMotor;
+        flag_mode = CHARGE_MODE;
+    }
+    else if(DriveModePin == 0)  //drive mode pin is ON? (pin is low-level activated)
+    {
+        TurnOffCharge;
+        flag_mode = DRIVE_MODE;
+    }
+    GPIOClearInterruptStatus(CHARGE_MODE_PIN);
+    GPIOClearInterruptStatus(DRIVE_MODE_PIN);
+
+    EnablePeriodicVoltageRead;  //re-enable periodic timer
 }
 
 void UARTInit(void)
@@ -140,40 +187,21 @@ ADCInit();      //ADC modules initialization
 IntInit();      //interrupt initialization
 UARTInit();
 
-while(1){   //main loop
+flag_mode = CHARGE_MODE;
+EnablePeriodicVoltageRead;
 
-    if(ChargeModePin == ON)   //charge mode
-    {
-        TurnOffMotor;
-        EnablePeriodicPanelVoltageRead;
-
-        while(ChargeModePin == ON);  
-
-        DisablePeriodicPanelVoltageRead;
-        TurnOffCharge; 
-    }   //end of charge mode
-
-    
-    else if(DriveModePin == ON)     //drive mode
-    {
-        TurnOffCharge;
-        EnablePeriodicBatteryVoltageRead;
-
-        while(DriveModePin == ON)
+while(1)
+{   //main loop
+    while(flag_mode == DRIVE_MODE)
+    {     	
+        if((StartMotorPin == ON) && (flag_voltage_level == OK))
         {
-            if((StartMotorPin == ON) && (flag_voltage_level == OK))
-            {
-                TurnOnMotor;
-            }
-            while(flag_motor == ON);
+            TurnOnMotor;
+
         }
-        DisablePeriodicBatteryVoltageRead;
-    }   //end of drive mode
-    
-        TurnOnRedLed;
+    while(flag_motor == ON);
+    }       
 }   //end of primary loop
 
 return 0;
 }   //end of main
-
-

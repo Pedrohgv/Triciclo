@@ -16,13 +16,14 @@ extern "C" {
 extern uint32_t test_variable;
 extern uint32_t flag_motor;
 extern uint32_t flag_voltage_level;
+extern uint32_t flag_mode;
 
 const i_o RX_PIN		  =	 {.port = PORT_A, .pin = 0};	//pins for uart receiver/transmitter
 const i_o TX_PIN		  =	 {.port = PORT_A, .pin = 1};
 
-const i_o CHARGE_MODE_PIN =  {.port = PORT_A, .pin = 7};    //input pin for 'charge mode'
-const i_o DRIVE_MODE_PIN  =  {.port = PORT_A, .pin = 6};   //input pin for 'charge mode'
-const i_o START_MOTOR_PIN =  {.port = PORT_A, .pin = 5};	//input pin for starting the motor
+const i_o CHARGE_MODE_PIN =  {.port = PORT_F, .pin = 4};    //input pin for 'charge mode'
+const i_o DRIVE_MODE_PIN  =  {.port = PORT_F, .pin = 0};   //input pin for 'charge mode'
+const i_o START_MOTOR_PIN =  {.port = PORT_A, .pin = 2};	//input pin for starting the motor
 
 const i_o CHARGE_PIN 	  =  {.port = PORT_B, .pin = 0};	//output pin for enabling charge
 const i_o MOTOR_PIN		  =	 {.port = PORT_B, .pin = 1};	//output pin for motor activation
@@ -34,16 +35,26 @@ const i_o GREEN_LED       =  {.port = PORT_F, .pin = 3};    //green led
 const i_o PANEL_VOLTAGE_READ_PIN = {.port = PORT_E, .pin = 4};	//Analog input for panel voltage read (ADC pin PE4)
 const i_o BATTERY_VOLTAGE_READ_PIN = {.port = PORT_E, .pin = 5};	//Analog input for battery voltage read (ADC pin PE5)
 
+
+
 #define	OK	1		//flags for voltage level
 #define LOW 0
 
+#define CHARGE_MODE 	0
+#define DRIVE_MODE 		1
+
+#define FLAG_LED_RED    0
+#define FLAG_LED_GREEN  1
+#define FLAG_LED_BLUE   1
+
+#define HALF_SEC		10000000
 #define	ONE_SEC			20000000	//time for periodic current and voltage reads
-#define	FIVE_SEC		100000000	//motor activation time
+#define	FIVE_SEC		100000000	
 
 //*********** ADC/Volts ratio = 246,805218 ADC/Volt
 
- #define	VOLTAGE_BATTERY_EMPTY	2715	//ADC read, equals 11 volts at battery
- #define	VOLTAGE_PANEL_LOW		3085	//ADC read, equals 12,5 volts at panel
+#define	VOLTAGE_BATTERY_EMPTY	2715	//ADC read, equals 11 volts at battery 
+#define	VOLTAGE_PANEL_LOW		3085	//ADC read, equals 12,5 volts at panel
 
 // #define VOLTAGE_BATTERY_EMPTY 1927		//for testing with 9V DC source
 // #define	VOLTAGE_PANEL_LOW     1927
@@ -63,7 +74,7 @@ const i_o BATTERY_VOLTAGE_READ_PIN = {.port = PORT_E, .pin = 5};	//Analog input 
 #define TurnOnWhiteLed  GPIOWritePin(RED_LED, ON); GPIOWritePin(BLUE_LED, ON); GPIOWritePin(GREEN_LED, ON)
 
 #define TurnOnCharge    GPIOWritePin(CHARGE_PIN,ON)
-#define TurnOnMotor     GPIOWritePin(MOTOR_PIN,ON); EnableTimer(TIMER_2); flag_motor = ON
+#define TurnOnMotor     GPIOWritePin(MOTOR_PIN,ON); EnableTimer(TIMER_1); flag_motor = ON
 
 #define TurnOffCharge   GPIOWritePin(CHARGE_PIN,OFF)
 #define TurnOffMotor    GPIOWritePin(MOTOR_PIN,OFF); flag_motor = OFF
@@ -74,11 +85,11 @@ const i_o BATTERY_VOLTAGE_READ_PIN = {.port = PORT_E, .pin = 5};	//Analog input 
 #define	PanelVoltageRead	GetADCConversion(ADC_0, SS_0)	
 #define	BatteryVoltageRead	GetADCConversion(ADC_0, SS_1)
 
-#define EnablePeriodicPanelVoltageRead 		EnableTimer(TIMER_0)
-#define	DisablePeriodicPanelVoltageRead		DisableTimer(TIMER_0)
+#define EnablePeriodicVoltageRead 		EnableTimer(TIMER_0)
+#define DisablePeriodicVoltageRead 		DisableTimer(TIMER_0)
 
-#define EnablePeriodicBatteryVoltageRead 		EnableTimer(TIMER_1)
-#define	DisablePeriodicBatteryVoltageRead		DisableTimer(TIMER_1)
+
+
 
 void IoInit(void);   //pin initialization
 void IntInit(void);  //initialize interrupts
