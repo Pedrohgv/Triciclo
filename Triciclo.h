@@ -61,12 +61,12 @@ const i_o BATTERY_VOLTAGE_READ_PIN = {.port = PORT_E, .pin = 5};	//Analog input 
 #define	DriveModePin    GPIOReadPin(DRIVE_MODE_PIN)			//reading of "drive mode" pin
 #define	StartMotorPin	GPIOReadPin(START_MOTOR_PIN)
 
-#define TurnOffRedLed   GPIOWritePin(RED_LED, OFF)	//macros for turning led's off
+#define TurnOffRedLed   GPIOWritePin(RED_LED, OFF)	//macros for turning LED's off
 #define TurnOffBlueLed  GPIOWritePin(BLUE_LED, OFF)
 #define TurnOffGreenLed GPIOWritePin(GREEN_LED, OFF)
 #define TurnOffAllLeds  TurnOffRedLed; TurnOffBlueLed; TurnOffGreenLed
 
-#define TurnOnRedLed 	TurnOffAllLeds; GPIOWritePin(RED_LED, ON)	//macros for  turning led's on
+#define TurnOnRedLed 	TurnOffAllLeds; GPIOWritePin(RED_LED, ON)	//macros for  turning LED's on
 #define TurnOnBlueLed 	TurnOffAllLeds; GPIOWritePin(BLUE_LED, ON)
 #define TurnOnGreenLed 	TurnOffAllLeds; GPIOWritePin(GREEN_LED, ON)
 #define TurnOnWhiteLed  GPIOWritePin(RED_LED, ON); GPIOWritePin(BLUE_LED, ON); GPIOWritePin(GREEN_LED, ON)
@@ -92,8 +92,11 @@ const i_o BATTERY_VOLTAGE_READ_PIN = {.port = PORT_E, .pin = 5};	//Analog input 
 
 
 void IoInit(void);   //pin initialization
+void TimersInit(void); //timers initialization
+void ADCInit(void);    //ADC blocks initialization
 void IntInit(void);  //initialize interrupts
 void UARTInit(void); //initialize UART
+void PutInSleepMode(void); 	//puts in sleep mode
 
 
 #ifdef __cplusplus

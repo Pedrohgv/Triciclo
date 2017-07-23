@@ -28,7 +28,7 @@ extern "C" {
 void ConfigureTimer (uint32_t timer_module, uint32_t timer_mode, uint32_t interrupt, uint32_t match_value);	//configures timer
 void EnableTimer(uint32_t timer_module);
 void DisableTimer (uint32_t timer_module);
-void ClearTimerInterruptStatus (uint32_t timer_module);   //clear the interupt status so program can continue
+void ClearTimerInterruptStatus (uint32_t timer_module);   //clear the interrupt status so program can continue
 
 #ifdef __cplusplus
 }

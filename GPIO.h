@@ -37,7 +37,7 @@ typedef struct {	//struct for pin designation
 }i_o;
 
 void xdelay(uint32_t count);    //simple delay function
-GPIOA_Type * GetPortAdress(uint32_t port);	//returns port adress 
+GPIOA_Type * GetPortAddress(uint32_t port);	//returns port address 
 void GPIOInit(i_o io, uint32_t direction, uint32_t internal_input_resistor);	//initialize digital GPIO pins
 uint32_t GPIOReadPin(i_o io);   //return value from input pin
 void GPIOWritePin(i_o io, uint32_t value);    //writes on specific pin

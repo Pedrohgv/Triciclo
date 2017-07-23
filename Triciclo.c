@@ -31,7 +31,7 @@ void IoInit(void)   //pin initialization
 void TimersInit(void)
 {
     ConfigureTimer(TIMER_0, PERIODIC_MODE, TIMER_INTERRUPT_ENABLE, ONE_SEC);    //timer for panel and battery voltage read
-    ConfigureTimer(TIMER_1, ONE_SHOT_MODE, TIMER_INTERRUPT_ENABLE, HALF_SEC);    //timer for stoppung the motor    
+    ConfigureTimer(TIMER_1, ONE_SHOT_MODE, TIMER_INTERRUPT_ENABLE, HALF_SEC);    //timer for stopping the motor    
 }
 
 void ADCInit(void)
@@ -59,7 +59,13 @@ void IntInit(void)  //initialize interrupts
 
 }
 
-void TIMER16_0A_IRQHandler(void)
+void PutInSleepMode(void)
+{
+    SCB->SCR |= BIT(1); //When returning from Handler mode to Th
+    __WFI();            //puts processor in Sleep Mode
+}
+
+void TIMER16_0A_IRQHandler(void)    //periodic voltage read
 {
     ClearTimerInterruptStatus(TIMER_0);
     if(flag_mode == CHARGE_MODE)
@@ -74,7 +80,7 @@ void TIMER16_0A_IRQHandler(void)
     GPIOInterruptEnable(DRIVE_MODE_PIN);
 }
 
-void TIMER16_1A_IRQHandler(void)
+void TIMER16_1A_IRQHandler(void)    //turns off motor
 {
     ClearTimerInterruptStatus(TIMER_1);
     TurnOffMotor;
@@ -114,7 +120,7 @@ void ADC0Seq0_IRQHandler(void)              //ADC voltage read from panel
     
 }
 
-void ADC0Seq1_IRQHandler(void)
+void ADC0Seq1_IRQHandler(void)      //ADC voltage read from battery
 {
     ClearADCInterruptStatus (ADC_0,SS_1);    //clear the interrupt status so program can continue
 
@@ -148,7 +154,7 @@ void ADC0Seq1_IRQHandler(void)
     
 }
 
-void GPIOF_IRQHandler(void)
+void GPIOF_IRQHandler(void)     //interrupt handler for changing mode
 {
     GPIOInterruptDisable(CHARGE_MODE_PIN);
     GPIOInterruptDisable(DRIVE_MODE_PIN);
@@ -192,7 +198,7 @@ void UARTInit(void)
     ConfigureUART(UART_0, RX_PIN, TX_PIN);
 }
 
-int main(void) {	//função main **** Lembrar de inicializar portas ****
+int main(void) {	//main function
 
 SystemInit();
 IoInit();        //port initialization
@@ -204,7 +210,7 @@ UARTInit();
 flag_mode = CHARGE_MODE;
 EnablePeriodicVoltageRead;
 
-while(1);
+PutInSleepMode();
 
 return 0;
 }   //end of main

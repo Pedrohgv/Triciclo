@@ -2,7 +2,7 @@
 
 #define USE_AHB
 
-TIMER0_Type * GetTimerAdress(uint32_t timer_module){
+TIMER0_Type * GetTimerAddress(uint32_t timer_module){
 
     switch (timer_module)  //selects timer
     {
@@ -36,15 +36,15 @@ void ConfigureTimer (uint32_t timer_module, uint32_t timer_mode, uint32_t interr
 {
 
 	TIMER0_Type *timer;
-	timer = GetTimerAdress(timer_module); 	//get timer adress
+	timer = GetTimerAddress(timer_module); 	//get timer address
 	
-    SYSCTL->RCGCTIMER |= BIT(timer_module); //enabels clock for timer
+    SYSCTL->RCGCTIMER |= BIT(timer_module); //enables clock for timer
 
 	timer->CTL &= 0xFFFFFFFE; 	//disables timer for configuration
 	timer->CFG = 0x00000000;   	//selects concatenated mode
 	timer->TAMR |= BIT(4) | timer_mode;	// selects 'count up' mode, and selects timer mode
 	timer->TAILR = match_value;	//loads the match value for timer
-	timer->IMR |= interrupt;	//configures interrrupt (time-out mode)
+	timer->IMR |= interrupt;	//configures interrupt (time-out mode)
     xdelay(10);
 
 }
@@ -52,7 +52,7 @@ void ConfigureTimer (uint32_t timer_module, uint32_t timer_mode, uint32_t interr
 void EnableTimer (uint32_t timer_module)
 {
 	TIMER0_Type *timer;
-	timer = GetTimerAdress(timer_module);	//get timer adress
+	timer = GetTimerAddress(timer_module);	//get timer address
 
 	timer->CTL |= 0x00000001;	//enables timer
 }
@@ -60,15 +60,15 @@ void EnableTimer (uint32_t timer_module)
 void DisableTimer (uint32_t timer_module)
 {
 	TIMER0_Type *timer;
-	timer = GetTimerAdress(timer_module);	//get timer adress
+	timer = GetTimerAddress(timer_module);	//get timer address
 	
 	timer->CTL &= 0xFFFFFFFE;	//disables timer
 }
 
-void ClearTimerInterruptStatus (uint32_t timer_module)   //clear the interupt status so program can continue
+void ClearTimerInterruptStatus (uint32_t timer_module)   //clear the interrupt status so program can continue
 {
     TIMER0_Type *timer;
-    timer = GetTimerAdress(timer_module);   //get timer adress
+    timer = GetTimerAddress(timer_module);   //get timer address
 
     timer->ICR |= 0x00000001;   
 }

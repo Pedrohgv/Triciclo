@@ -8,7 +8,7 @@ void xdelay(uint32_t count){    //simple delay function
         count--;
 }
 
-GPIOA_Type * GetPortAdress(uint32_t port) {       //return adress port
+GPIOA_Type * GetPortAddress(uint32_t port) {       //return address port
 
 #ifdef USE_AHB
     SYSCTL->GPIOHBCTL |= port;  //Enable AHB access for Port
@@ -72,7 +72,7 @@ GPIOA_Type * GetPortAdress(uint32_t port) {       //return adress port
 void GPIOInit(i_o io, uint32_t direction, uint32_t internal_input_resistor) {	//initialize digital GPIO pins
     GPIOA_Type *gpio;
 
-    gpio = GetPortAdress(io.port); 
+    gpio = GetPortAddress(io.port); 
 
     /* Enable clock for Port         */
     SYSCTL->RCGCGPIO  |= io.port;
@@ -105,7 +105,7 @@ uint32_t GPIOReadPin(i_o io){   //return value from input pin
 
 GPIOA_Type *gpio;
 
-gpio = GetPortAdress(io.port);
+gpio = GetPortAddress(io.port);
 
     return ((gpio->DATA & BIT(io.pin)) >> io.pin);  
     xdelay(10);
@@ -117,7 +117,7 @@ void GPIOWritePin(i_o io, uint32_t value){    //writes on specific pin
 
 GPIOA_Type *gpio;
 
-gpio = GetPortAdress(io.port);
+gpio = GetPortAddress(io.port);
 #ifdef USE_AHB
     SYSCTL->GPIOHBCTL |= io.port;
 #endif
@@ -128,7 +128,7 @@ gpio = GetPortAdress(io.port);
 void GPIOInterruptInit(i_o io, uint32_t event) //configures a edge-detect interrupt
 {
     GPIOA_Type *gpio;
-    gpio = GetPortAdress(io.port); //get port adress
+    gpio = GetPortAddress(io.port); //get port address
 
     
     if(event == RISING_EDGE)    //set detection event as rising or falling edge
@@ -146,7 +146,7 @@ void GPIOInterruptInit(i_o io, uint32_t event) //configures a edge-detect interr
 void GPIOInterruptEnable(i_o io)
 {
     GPIOA_Type *gpio;
-    gpio = GetPortAdress(io.port); //get port adress
+    gpio = GetPortAddress(io.port); //get port address
 
     gpio->IM |= BIT(io.pin);    //enables interrupt 
 }
@@ -154,7 +154,7 @@ void GPIOInterruptEnable(i_o io)
 void GPIOInterruptDisable(i_o io)
 {
     GPIOA_Type *gpio;
-    gpio = GetPortAdress(io.port); //get port adress
+    gpio = GetPortAddress(io.port); //get port address
 
     gpio->IM &= ~BIT(io.pin);    //disables interrupt
 }
@@ -162,7 +162,7 @@ void GPIOInterruptDisable(i_o io)
 void GPIOClearInterruptStatus(i_o io)
 {
     GPIOA_Type *gpio;
-    gpio = GetPortAdress(io.port); //get port adress
+    gpio = GetPortAddress(io.port); //get port address
 
     gpio->ICR |= BIT(io.pin);    //clear interrupt status
 }

@@ -16,7 +16,7 @@ void ConfigureADC(i_o io, uint32_t ADC_module, uint32_t ADC_pin, uint32_t sample
         break;
     }
     
-    gpio = GetPortAdress(io.port);  
+    gpio = GetPortAddress(io.port);  
 
     SYSCTL->RCGCADC |= ADC_module;    //enable clock for ADC   
 
@@ -53,8 +53,7 @@ void ConfigureADC(i_o io, uint32_t ADC_module, uint32_t ADC_pin, uint32_t sample
         adc->SSCTL3 |= (0x2 | (interrupt << 2)); //select sample 0 as end of sequence and configure interrupt
         break;
     }
-  //  adc->SSMUX0 |= ADC_pin;    //select AIN0 (PE3) as input for sample 0 of sample sequencer 0
-    //adc->SSCTL0 |= 0x00000002;     //set sample 0 of sequencer 0 to be the last sample
+
     adc->IM   |=  (interrupt << sample_sequencer);  //configure interrupt mask
     adc->PC   |= 0x00000001;      //set sampling rate as 125 ksps
 
@@ -109,7 +108,7 @@ void ClearADCInterruptStatus (uint32_t ADC_module, uint32_t sample_sequencer)   
     adc->ISC |= BIT(sample_sequencer);
 }
 
-uint32_t GetADCConversion (uint32_t ADC_module, uint32_t sample_sequencer) //return value from ADC conversion on ADC module specified by adc
+uint32_t GetADCConversion (uint32_t ADC_module, uint32_t sample_sequencer) //return value from ADC conversion from specified ADC module and sample sequencer
 {
     ADC0_Type  *adc;    //ADC converter
 

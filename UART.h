@@ -18,7 +18,7 @@ extern "C" {
 #define UART_6	BIT(6)
 #define UART_7	BIT(7)
 
-UART0_Type * GetUARTAdress (uint32_t uart_module);					//returns adress of UART module
+UART0_Type * GetUARTAddress (uint32_t uart_module);					//returns address of UART module
 void ConfigureUART (uint32_t uart_module, i_o rx_pin, i_o tx_pin);	//configures UART with baud rate = 9600 bps, 1 stop bit, no parity bits
 void PrintChar (uint32_t uart_module, char c);
 char ReadChar (uint32_t uart_module);

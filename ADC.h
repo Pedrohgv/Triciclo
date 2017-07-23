@@ -48,7 +48,7 @@ void ConfigureADC(i_o io, uint32_t ADC_module, uint32_t ADC_pin, uint32_t sample
 void EnableSampleSequencer (uint32_t ADC_module, uint32_t sample_sequencer);
 void StartADCConversion (uint32_t ADC_module, uint32_t sample_sequencer);
 void ClearADCInterruptStatus (uint32_t ADC_module, uint32_t sample_sequencer);    //clear the interrupt status so program can continue
-uint32_t GetADCConversion (uint32_t ADC_module, uint32_t sample_sequencer); //return value from ADC conversion on ADC module specified by adc
+uint32_t GetADCConversion (uint32_t ADC_module, uint32_t sample_sequencer); //return value from ADC conversion from specified ADC module and sample sequencer
 
 #ifdef __cplusplus
 }

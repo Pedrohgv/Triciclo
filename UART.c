@@ -2,7 +2,7 @@
 
 #define USE_AHB
 
-UART0_Type * GetUARTAdress (uint32_t uart_module)	//returns adress of UART module
+UART0_Type * GetUARTAddress (uint32_t uart_module)	//returns address of UART module
 {
 	switch (uart_module)
 	{
@@ -45,11 +45,11 @@ void ConfigureUART (uint32_t uart_module, i_o rx_pin, i_o tx_pin)	//configures U
 {
 	GPIOA_Type *gpio_rx;
 	GPIOA_Type *gpio_tx;	
-	UART0_Type *uart;	//uart adress
+	UART0_Type *uart;	//uart address
 
-	gpio_rx = GetPortAdress(rx_pin.port);
-	gpio_tx = GetPortAdress(tx_pin.port);
-	uart = GetUARTAdress(uart_module);
+	gpio_rx = GetPortAddress(rx_pin.port);
+	gpio_tx = GetPortAddress(tx_pin.port);
+	uart = GetUARTAddress(uart_module);
 
 	SYSCTL->RCGCGPIO |= (rx_pin.port | tx_pin.port);	//enables clock for rx and tx pins
 	SYSCTL->RCGCUART |= uart_module;		//enables clock for uart module
@@ -57,14 +57,14 @@ void ConfigureUART (uint32_t uart_module, i_o rx_pin, i_o tx_pin)	//configures U
 	gpio_rx->AFSEL |= BIT(rx_pin.pin);	//allows pin to be controlled by an associated peripheral
 	gpio_tx->AFSEL |= BIT(tx_pin.pin);
 	
-	gpio_rx->PCTL &= ~(0x0000000F << (rx_pin.pin << 2)); 	//erases current value of PCTL register for periphal control assignment 
+	gpio_rx->PCTL &= ~(0x0000000F << (rx_pin.pin << 2)); 	//erases current value of PCTL register for peripheral control assignment 
 	gpio_tx->PCTL &= ~(0x0000000F << (tx_pin.pin << 2));
 	gpio_rx->PCTL |= (1 << (rx_pin.pin << 2));	//assign UART to control rx and tx pins
 	gpio_tx->PCTL |= (1 << (tx_pin.pin << 2));
 
 	
 
-	gpio_rx->DEN |= BIT(rx_pin.pin);	//enables digital funciotn for rx and tx pins
+	gpio_rx->DEN |= BIT(rx_pin.pin);	//enables digital function for rx and tx pins
 	gpio_tx->DEN |= BIT(tx_pin.pin);
 
 	uart->CTL &= ~0x00000001;	//disables uart module for safe configuration
@@ -82,8 +82,8 @@ void ConfigureUART (uint32_t uart_module, i_o rx_pin, i_o tx_pin)	//configures U
 
 void PrintChar (uint32_t uart_module, char c)	
 {
-	UART0_Type *uart;	//uart adress
-	uart = GetUARTAdress(uart_module);
+	UART0_Type *uart;	//uart address
+	uart = GetUARTAddress(uart_module);
 
 	while((uart->FR & (1<<5)) != 0){}	//check if any data is still being transmitting
 	uart->DR = c;
@@ -91,8 +91,8 @@ void PrintChar (uint32_t uart_module, char c)
 
 char ReadChar (uint32_t uart_module)
 {
-	UART0_Type *uart;	//uart adress
-	uart = GetUARTAdress(uart_module);
+	UART0_Type *uart;	//uart address
+	uart = GetUARTAddress(uart_module);
 
 	while((uart->FR & (1<<4)) != 0);		//check if register has data
 
@@ -101,8 +101,8 @@ char ReadChar (uint32_t uart_module)
 
 void PrintString (uint32_t uart_module, char * string)
 {
-	UART0_Type *uart;	//uart adress
-	uart = GetUARTAdress(uart_module);
+	UART0_Type *uart;	//uart address
+	uart = GetUARTAddress(uart_module);
 
 	while(*string)
 		PrintChar(uart_module, *(string++));
@@ -171,9 +171,6 @@ void Ftoa(float n, char *res, uint32_t afterpoint)
     {
         res[i] = '.';  // add dot
  
-        // Get the value of fraction part upto given no.
-        // of points after dot. The third parameter is needed
-        // to handle cases like 233.007
         for(count = 0; count < afterpoint; count++)
         {
         	fpart = fpart * 10;
