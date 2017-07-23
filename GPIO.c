@@ -133,8 +133,8 @@ void GPIOInterruptInit(i_o io, uint32_t event) //configures a edge-detect interr
     
     if(event == RISING_EDGE)    //set detection event as rising or falling edge
     {
-        gpio->IEV |= BIT(io.pin);   //set detection event as rising edge
         GPIOInit(io, INPUT, PULL_DOWN_RESISTOR);  //initialize pin with pull down resistor
+        gpio->IEV |= BIT(io.pin);   //set detection event as rising edge
     }    
     else
     {

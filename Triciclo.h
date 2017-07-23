@@ -14,8 +14,6 @@ extern "C" {
 #include	"UART.h"
 
 extern uint32_t test_variable;
-extern uint32_t flag_motor;
-extern uint32_t flag_voltage_level;
 extern uint32_t flag_mode;
 
 const i_o RX_PIN		  =	 {.port = PORT_A, .pin = 0};	//pins for uart receiver/transmitter
@@ -53,8 +51,8 @@ const i_o BATTERY_VOLTAGE_READ_PIN = {.port = PORT_E, .pin = 5};	//Analog input 
 
 //*********** ADC/Volts ratio = 246,805218 ADC/Volt
 
-#define	VOLTAGE_BATTERY_EMPTY	2715	//ADC read, equals 11 volts at battery 
-#define	VOLTAGE_PANEL_LOW		3085	//ADC read, equals 12,5 volts at panel
+#define	VOLTAGE_BATTERY_EMPTY	2962	//ADC read, equals 12 volts at battery 
+#define	VOLTAGE_PANEL_LOW		3549	//ADC read, equals 14,4 volts at panel (13,5 volts at battery)
 
 // #define VOLTAGE_BATTERY_EMPTY 1927		//for testing with 9V DC source
 // #define	VOLTAGE_PANEL_LOW     1927
@@ -74,12 +72,12 @@ const i_o BATTERY_VOLTAGE_READ_PIN = {.port = PORT_E, .pin = 5};	//Analog input 
 #define TurnOnWhiteLed  GPIOWritePin(RED_LED, ON); GPIOWritePin(BLUE_LED, ON); GPIOWritePin(GREEN_LED, ON)
 
 #define TurnOnCharge    GPIOWritePin(CHARGE_PIN,ON)
-#define TurnOnMotor     GPIOWritePin(MOTOR_PIN,ON); EnableTimer(TIMER_1); flag_motor = ON
+#define TurnOnMotor     GPIOWritePin(MOTOR_PIN,ON); EnableTimer(TIMER_1)
 
 #define TurnOffCharge   GPIOWritePin(CHARGE_PIN,OFF)
-#define TurnOffMotor    GPIOWritePin(MOTOR_PIN,OFF); flag_motor = OFF
+#define TurnOffMotor    GPIOWritePin(MOTOR_PIN,OFF)
 
-#define	StartPanelVoltageRead		StartADCConversion(ADC_0, SS_0)
+#define	StartPanelVoltageRead	StartADCConversion(ADC_0, SS_0)
 #define	StartBatteryVoltageRead	StartADCConversion(ADC_0, SS_1)
 
 #define	PanelVoltageRead	GetADCConversion(ADC_0, SS_0)	
@@ -88,6 +86,8 @@ const i_o BATTERY_VOLTAGE_READ_PIN = {.port = PORT_E, .pin = 5};	//Analog input 
 #define EnablePeriodicVoltageRead 		EnableTimer(TIMER_0)
 #define DisablePeriodicVoltageRead 		DisableTimer(TIMER_0)
 
+#define	EnableMotorStart				GPIOInterruptEnable(START_MOTOR_PIN)
+#define	DisableMotorStart				GPIOInterruptDisable(START_MOTOR_PIN)
 
 
 

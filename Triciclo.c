@@ -11,8 +11,6 @@
 #include "Triciclo.h"
 
 uint32_t test_variable = 0;
-uint32_t flag_motor = OFF;
-uint32_t flag_voltage_level = LOW;
 uint32_t flag_mode = CHARGE_MODE;
 uint32_t flag_LED_state = FLAG_LED_RED;    //flag for LED state, used in blink for 
 
@@ -23,7 +21,7 @@ void IoInit(void)   //pin initialization
     GPIOInit(GREEN_LED, OUTPUT, 0);
     GPIOInterruptInit(CHARGE_MODE_PIN, FALLING_EDGE);
     GPIOInterruptInit(DRIVE_MODE_PIN, FALLING_EDGE);
-    GPIOInit(START_MOTOR_PIN, INPUT, PULL_DOWN_RESISTOR);
+    GPIOInterruptInit(START_MOTOR_PIN, RISING_EDGE);
     GPIOInit(CHARGE_PIN,OUTPUT, 0);
     GPIOInit(MOTOR_PIN,OUTPUT, 0);
     TurnOffMotor;
@@ -51,7 +49,8 @@ void IntInit(void)  //initialize interrupts
     NVIC_EnableIRQ(ADC0SS1_IRQn);   //enables interrupt for sample sequencer 1 of ADC module 0
     NVIC_EnableIRQ(TIMER0A_IRQn);   //enables interrupt for for timer 0
     NVIC_EnableIRQ(TIMER1A_IRQn);   //enables interrupt for for timer 1
-    NVIC_EnableIRQ(GPIOF_IRQn);   //enables interrupt for for port f pins
+    NVIC_EnableIRQ(GPIOF_IRQn);   //enables interrupt for port f pins
+    NVIC_EnableIRQ(GPIOA_IRQn);   //enables interrupt for port f pins
 
     GPIOInterruptEnable(CHARGE_MODE_PIN);   //enables interrupt for charge mode button
     GPIOInterruptEnable(DRIVE_MODE_PIN);    //enables interrupt for drive mode button
@@ -79,6 +78,7 @@ void TIMER16_1A_IRQHandler(void)
 {
     ClearTimerInterruptStatus(TIMER_1);
     TurnOffMotor;
+    EnablePeriodicVoltageRead;
 }
 
 void ADC0Seq0_IRQHandler(void)              //ADC voltage read from panel
@@ -124,15 +124,15 @@ void ADC0Seq1_IRQHandler(void)
     Ftoa(ADC, char_float, 5);
     PrintString(UART_0, char_float);
     PrintChar(UART_0, '\n');
-    
+
     if(ADC > VOLTAGE_BATTERY_EMPTY)
     {
-        flag_voltage_level = OK;
+        EnableMotorStart;
         TurnOnGreenLed;
     }
     else
     {
-        flag_voltage_level = LOW;
+        DisableMotorStart;
         if(flag_LED_state == FLAG_LED_RED)
         {
             TurnOnRedLed;
@@ -173,6 +173,20 @@ void GPIOF_IRQHandler(void)
     EnablePeriodicVoltageRead;  //re-enable periodic timer
 }
 
+void GPIOA_IRQHandler(void) //interrupt handler for motor activation
+{
+  GPIOInterruptDisable(START_MOTOR_PIN);
+
+  DisablePeriodicVoltageRead; //disable periodic timer for avoiding the external interrupt to be re-enabled too fast
+
+  if(StartMotorPin == ON)
+  {
+    TurnOnMotor;
+  }
+
+  GPIOClearInterruptStatus(START_MOTOR_PIN);
+}
+
 void UARTInit(void)
 {
     ConfigureUART(UART_0, RX_PIN, TX_PIN);
@@ -190,18 +204,7 @@ UARTInit();
 flag_mode = CHARGE_MODE;
 EnablePeriodicVoltageRead;
 
-while(1)
-{   //main loop
-    while(flag_mode == DRIVE_MODE)
-    {     	
-        if((StartMotorPin == ON) && (flag_voltage_level == OK))
-        {
-            TurnOnMotor;
-
-        }
-    while(flag_motor == ON);
-    }       
-}   //end of primary loop
+while(1);
 
 return 0;
 }   //end of main
