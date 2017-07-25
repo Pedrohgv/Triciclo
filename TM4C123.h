@@ -12,7 +12,7 @@
 #ifndef TM4C123_H
 #define TM4C123_H
 
-#define TM4C123GH6PM
+//#define TM4C123GH6PM
 
 #if defined(SC4CC231E6PM)
   #include "SC4CC231E6PM.h"

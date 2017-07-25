@@ -1,4 +1,4 @@
-# Este script carrega a placa com o programa presente na pasta
+# This script loads the firmware into the board
 
 make clean
 

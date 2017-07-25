@@ -1,7 +1,14 @@
 
-#include GPIO.h
+#include "GPIO.h"
 
-GPIOA_Type * Get_Port_Adress(uint32_t port) {       //return adress port
+#define USE_AHB
+
+void xdelay(uint32_t count){    //simple delay function
+    while(count > 0)
+        count--;
+}
+
+GPIOA_Type * GetPortAddress(uint32_t port) {       //return address port
 
 #ifdef USE_AHB
     SYSCTL->GPIOHBCTL |= port;  //Enable AHB access for Port
@@ -62,52 +69,100 @@ GPIOA_Type * Get_Port_Adress(uint32_t port) {       //return adress port
 }
 
 
-void GPIO_Init(uint32_t port, uint32_t outputs, uint32_t inputs) {	//initialize digital GPIO pins
-GPIOA_Type *gpio;
+void GPIOInit(i_o io, uint32_t direction, uint32_t internal_input_resistor) {	//initialize digital GPIO pins
+    GPIOA_Type *gpio;
 
-gpio = Get_Port_Adress(port); 
+    gpio = GetPortAddress(io.port); 
 
-     /* Enable clock for Port         */
-     SYSCTL->RCGCGPIO  |= port;
+    /* Enable clock for Port         */
+    SYSCTL->RCGCGPIO  |= io.port;
 
-     /* To modify PF0, it is necessary to unlock it. See 10.1 of Datasheet */
-     if( ((inputs|outputs)&1) && port==PORT_F) {
-         gpio->LOCK = 0x4C4F434B;                // unlock to set PF0
-         *(uint32_t * )(&(gpio->CR))   = 0x0;    // CR is marked read-only
-     }
-
-    // /* Pins for led are digital output */
-    gpio->DIR    = outputs;         /* Only specified bits are outputs */
-    gpio->DEN    = outputs | inputs;  /* Only specified bits are digital        */
-    gpio->PUR    = inputs;  //ativa resistor de pullup das portas de entrada
-    xdelay(10);
-     if( (inputs|outputs)&1 && port==PORT_F ) {
-         gpio->LOCK = 0x0;                       // lock again
-         *(uint32_t * )(&(gpio->CR))   = 0x0;    // CR is marked read-only
+    //  /* To modify PF0, it is necessary to unlock it. See 10.1 of Datasheet */
+    if( (BIT(io.pin) & 1) && (io.port==PORT_F))
+    {
+        gpio->LOCK = 0x4C4F434B;                // unlock to set PF0
+        *(uint32_t * )(&(gpio->CR)) = 0x1;    // CR is marked read-only
     }
 
+    gpio->DEN |= BIT(io.pin);  //set pin as digital i/o
+
+    if(direction == OUTPUT)
+       gpio->DIR |= BIT(io.pin);  //set pin as output
+    else if(internal_input_resistor == PULL_DOWN_RESISTOR)
+       gpio->PDR |= BIT(io.pin);  //enable pull down resistor
+    else if(internal_input_resistor == PULL_UP_RESISTOR)
+       gpio->PUR |= BIT(io.pin); //enable pull up resistor
+
+    if((BIT(io.pin) & 1) && (io.port==PORT_F))
+    {
+        gpio->LOCK = 0x0;                       // lock again
+        *(uint32_t * )(&(gpio->CR))   = 0x0;    // CR is marked read-only
+    }
+    xdelay(10);
 }
 
-uint32_t GPIO_ReadPins(uint32_t port){   //return values from specific GPIO port
+uint32_t GPIOReadPin(i_o io){   //return value from input pin
 
 GPIOA_Type *gpio;
 
-gpio = Get_Port_Adress(port);
+gpio = GetPortAddress(io.port);
 
-    return gpio->DATA;  
+    return ((gpio->DATA & BIT(io.pin)) >> io.pin);  
     xdelay(10);
 }
 
 
 
-void GPIO_WritePins(uint32_t port, uint32_t zeroes, uint32_t ones){    //escreve na porta F
+void GPIOWritePin(i_o io, uint32_t value){    //writes on specific pin
 
 GPIOA_Type *gpio;
 
-gpio = Get_Port_Adress(port);
+gpio = GetPortAddress(io.port);
 #ifdef USE_AHB
-    SYSCTL->GPIOHBCTL |= port;
+    SYSCTL->GPIOHBCTL |= io.port;
 #endif
-    gpio->DATA = (gpio->DATA&~zeroes)|ones;
+    gpio->DATA = (gpio->DATA & ~BIT(io.pin)) | (value << io.pin);
 
+} 
+
+void GPIOInterruptInit(i_o io, uint32_t event) //configures a edge-detect interrupt
+{
+    GPIOA_Type *gpio;
+    gpio = GetPortAddress(io.port); //get port address
+
+    
+    if(event == RISING_EDGE)    //set detection event as rising or falling edge
+    {
+        GPIOInit(io, INPUT, PULL_DOWN_RESISTOR);  //initialize pin with pull down resistor
+        gpio->IEV |= BIT(io.pin);   //set detection event as rising edge
+    }    
+    else
+    {
+        GPIOInit(io, INPUT, PULL_UP_RESISTOR);  //initialize pin with pull up resistor
+    }
+    xdelay(10);
+}
+
+void GPIOInterruptEnable(i_o io)
+{
+    GPIOA_Type *gpio;
+    gpio = GetPortAddress(io.port); //get port address
+
+    gpio->IM |= BIT(io.pin);    //enables interrupt 
+}
+
+void GPIOInterruptDisable(i_o io)
+{
+    GPIOA_Type *gpio;
+    gpio = GetPortAddress(io.port); //get port address
+
+    gpio->IM &= ~BIT(io.pin);    //disables interrupt
+}
+
+void GPIOClearInterruptStatus(i_o io)
+{
+    GPIOA_Type *gpio;
+    gpio = GetPortAddress(io.port); //get port address
+
+    gpio->ICR |= BIT(io.pin);    //clear interrupt status
 }
