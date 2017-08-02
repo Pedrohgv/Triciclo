@@ -92,10 +92,13 @@ void ADC0Seq0_IRQHandler(void)              //ADC voltage read from panel
     ClearADCInterruptStatus (ADC_0,SS_0);    //clear the interrupt status so program can continue
 
     uint32_t ADC = PanelVoltageRead;
+    float    voltage_panel = ADC/246.805218;
 
     char char_float[10];
-    Ftoa(ADC, char_float, 5);
+    Ftoa(voltage_panel, char_float, 5);
+    PrintString(UART_0, "Leitura de tensao no painel: ");
     PrintString(UART_0, char_float);
+    PrintString(UART_0, " V");
     PrintChar(UART_0, '\n');
 
     if(ADC > VOLTAGE_PANEL_LOW)
@@ -125,10 +128,13 @@ void ADC0Seq1_IRQHandler(void)      //ADC voltage read from battery
     ClearADCInterruptStatus (ADC_0,SS_1);    //clear the interrupt status so program can continue
 
     uint32_t ADC = BatteryVoltageRead;
+    float    voltage_battery = ADC/246.805218;
 
     char char_float[10];
-    Ftoa(ADC, char_float, 5);
+    Ftoa(voltage_battery, char_float, 5);
+    PrintString(UART_0, "Leitura de tensao na bateria: ");
     PrintString(UART_0, char_float);
+    PrintString(UART_0, " V");
     PrintChar(UART_0, '\n');
 
     if(ADC > VOLTAGE_BATTERY_EMPTY)
@@ -166,6 +172,7 @@ void GPIOF_IRQHandler(void)     //interrupt handler for changing mode
     if(ChargeModePin == 0)  //charge mode pin is ON? (pin is low-level activated)
     {
         TurnOffMotor;
+        DisableMotorStart;
         flag_mode = CHARGE_MODE;
     }
     else if(DriveModePin == 0)  //drive mode pin is ON? (pin is low-level activated)
@@ -182,14 +189,13 @@ void GPIOF_IRQHandler(void)     //interrupt handler for changing mode
 void GPIOA_IRQHandler(void) //interrupt handler for motor activation
 {
   GPIOInterruptDisable(START_MOTOR_PIN);
-
   DisablePeriodicVoltageRead; //disable periodic timer for avoiding the external interrupt to be re-enabled too fast
 
   if(StartMotorPin == ON)
   {
     TurnOnMotor;
   }
-
+  EnablePeriodicVoltageRead; //re enable periodic voltage read
   GPIOClearInterruptStatus(START_MOTOR_PIN);
 }
 
