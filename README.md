@@ -20,6 +20,6 @@ the CMSIS (Cortex Microcontroller Software Interface Standart) standard was used
 
 The circuit schematic can be seen bellow:
 
-<img src="images/Circuit2.png" alt="missing_file" width="1600" height="600"/>
+<img src="images/Circuit.png" alt="missing_file" width="1600" height="600"/>
 
 The project's documentation, writen in portuguese, can also be found in this repository.
